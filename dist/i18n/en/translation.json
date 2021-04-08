@@ -1,0 +1,26 @@
+{
+    "profile-title":"Set up profile for first",
+    "name":"Name",
+    "sex":"Sex",
+    "male":"Male",
+    "female":"Female",
+    "phone":"Phone",
+    "email":"Email",
+    "company":"Company",
+    "position":"Position",
+    "submit":"Save",
+    "edit":"Edit",
+    "cardcase":"Cardcase",
+    "signout":"Log out",
+    "profile-edit-title":"Edit Profile",
+    "edit-submit":"Save",
+    "share":"Share Link",
+    "share-des":"Share links or QR codes with friends",
+    "copy":"Copy",
+    "board-title":"Board",
+    "views-total":"Views-total",
+    "online-total":"Online-Person",
+    "views-today":"Views-today",
+    "avg-time":"Average online time"
+
+}

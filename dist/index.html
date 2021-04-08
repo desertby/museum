@@ -1,0 +1,6254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <title>虚拟博物馆</title>
+    <link rel="icon" href="favicon.ico" />
+    <script src="js/libs/pep.min.js"></script>
+    <script src="js/online/babylon.js"></script>
+    <script src="js/online/babylon.gui.min.js"></script>
+    <script src="js/online/babylon.inspector.bundle.js"></script>
+    <script src="js/libs/promise-6.1.0.js"></script>
+    <script src="js/libs/jquery-3.5.0.min.js"></script>
+    <!-- axios -->
+    <script src="js/online/axios.min.js"></script>
+    <script src="js/libs/aes.js"></script>
+    <script src="js/libs/sha256.js"></script>
+    <script src="js/libs/hmac-sha256.js"></script>
+    <script src="js/libs/pad-zeropadding.js"></script>
+    <script src="js/libs/i18next.min.js"></script>
+    <script src="js/libs/i18nextLocizeBackend.min.js"></script>
+    <script src="js/libs/jquery-i18next.min.js"></script>
+    <script src="./icon/iconfont.js"></script>
+    <!-- CSS -->
+    <!-- <link href="css/index.css" rel="stylesheet" /> -->
+    <link rel="stylesheet" href="./icon/iconfont.css" />
+    <link rel="stylesheet" href="./css/normalize.css" />
+    <link rel="stylesheet" href="./css/perfect-scrollbar.css" />
+    <style>
+      @font-face {
+        font-family: "思源黑体";
+        font-display: swap;
+        src: url("//at.alicdn.com/t/webfont_3nxy8gu5uub.eot"); /* IE9*/
+        src: url("//at.alicdn.com/t/webfont_3nxy8gu5uub.eot?#iefix")
+            format("embedded-opentype"),
+          /* IE6-IE8 */ url("//at.alicdn.com/t/webfont_3nxy8gu5uub.woff2")
+            format("woff2"),
+          url("//at.alicdn.com/t/webfont_3nxy8gu5uub.woff") format("woff"),
+          /* chrome、firefox */ url("//at.alicdn.com/t/webfont_3nxy8gu5uub.ttf")
+            format("truetype"),
+          /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+            url("//at.alicdn.com/t/webfont_3nxy8gu5uub.svg#NotoSansHans-DemiLight")
+            format("svg"); /* iOS 4.1- */
+      }
+      @font-face {
+        font-family: "方正正粗黑简体";
+        src: url("./fonts/方正正粗黑简体.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "方正粗倩简体";
+        src: url("./fonts/方正粗倩简体.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "方正粗黑宋简体";
+        src: url("./fonts/方正粗黑宋简体.woff2") format("woff2");
+      }
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .iconfont {
+        font-size: 40px;
+      }
+
+      .cover {
+        display: none;
+        height: 100%;
+        width: 100%;
+      }
+
+      #cover-img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+      }
+
+      img[src=""],
+      img:not([src]) {
+        opacity: 0;
+      }
+
+      #bg {
+        display: none;
+        position: absolute;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        z-index: 0;
+        -moz-opacity: 0.7;
+        opacity: 0.5;
+        filter: alpha(opacity=70);
+      }
+
+      .icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.15em;
+        fill: currentColor;
+        overflow: hidden;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        outline: none;
+      }
+
+      #fpsLabel {
+        position: absolute;
+        right: 10px;
+        top: 20px;
+        cursor: default;
+        z-index: 10;
+        background-color: #7283a0;
+        color: white;
+        padding: 5px;
+        border-radius: 3px;
+        font-family: "Montserrat";
+        pointer-events: none;
+        user-select: none;
+      }
+
+      #loadingScreen {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        color: white;
+        font-size: 50px;
+        text-align: center;
+        background-color: #bb464bcc;
+        z-index: 9999;
+      }
+
+      #model3d {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      .demo {
+        padding: 15em 0;
+        z-index: 9999;
+      }
+
+      .tou {
+        z-index: 0;
+        position: absolute;
+        width: 51px;
+        /* display: block; */
+        height: 51px;
+        /* overflow: hidden; */
+        background: url(./images/exhibits/tou.png);
+        top: 0px;
+        left: 0px;
+        /* left: 100px; */
+      }
+
+      .inputA {
+        z-index: 9999;
+        display: block;
+        height: 100px;
+        width: 400px;
+        background: url(./images/exhibits/input.png);
+        margin-left: 60px;
+      }
+
+      .input {
+        font-size: 16px;
+        width: 350px;
+        height: 50px;
+        border: 0px;
+        resize: none;
+        text-align: left;
+        font-family: Arial, Helvetica, sans-serif;
+        color: grey;
+        background: #ffffff00;
+        margin-left: 30px;
+        margin-top: 15px;
+      }
+
+      .number {
+        position: absolute;
+        top: 70px;
+        left: 400px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        color: grey;
+      }
+
+      .count {
+        position: absolute;
+        width: 15px;
+        text-align: right;
+      }
+    </style>
+    <style>
+      /* 初始化设置 */
+      html,
+      body {
+        font-family: -apple-system, Microsoft Yahei, Tahoma, Simsun, sans-serif;
+        color: #000;
+        font-size: 16px;
+        overflow-x: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      ul,
+      li {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        /* background: url("/images/background/bgc.webp") no-repeat 100% 100%; */
+        background: #aaa;
+      }
+
+      /* 加载界面 */
+      .load {
+        position: fixed;
+        width: 300px;
+        height: 30px;
+        left: 50%;
+        top: 60%;
+        transform: translate(-50%, -50%);
+      }
+
+      #id-progress2 {
+        float: left;
+        margin: 0;
+        margin-top: -10px;
+        color: #ffffff;
+        font-size: 24px;
+        font-family: Arial;
+      }
+
+      .sk-fading-circle {
+        float: left;
+        margin: -15px 15px 10px -5px;
+        width: 35px;
+        height: 35px;
+        position: relative;
+      }
+
+      .sk-fading-circle .sk-circle {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      .sk-fading-circle .sk-circle:before {
+        content: "";
+        display: block;
+        margin: 0 auto;
+        width: 15%;
+        height: 15%;
+        background-color: #fff;
+        border-radius: 100%;
+        -webkit-animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+        animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+      }
+
+      .sk-fading-circle .sk-circle2 {
+        -webkit-transform: rotate(30deg);
+        -ms-transform: rotate(30deg);
+        transform: rotate(30deg);
+      }
+
+      .sk-fading-circle .sk-circle3 {
+        -webkit-transform: rotate(60deg);
+        -ms-transform: rotate(60deg);
+        transform: rotate(60deg);
+      }
+
+      .sk-fading-circle .sk-circle4 {
+        -webkit-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+        transform: rotate(90deg);
+      }
+
+      .sk-fading-circle .sk-circle5 {
+        -webkit-transform: rotate(120deg);
+        -ms-transform: rotate(120deg);
+        transform: rotate(120deg);
+      }
+
+      .sk-fading-circle .sk-circle6 {
+        -webkit-transform: rotate(150deg);
+        -ms-transform: rotate(150deg);
+        transform: rotate(150deg);
+      }
+
+      .sk-fading-circle .sk-circle7 {
+        -webkit-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+      }
+
+      .sk-fading-circle .sk-circle8 {
+        -webkit-transform: rotate(210deg);
+        -ms-transform: rotate(210deg);
+        transform: rotate(210deg);
+      }
+
+      .sk-fading-circle .sk-circle9 {
+        -webkit-transform: rotate(240deg);
+        -ms-transform: rotate(240deg);
+        transform: rotate(240deg);
+      }
+
+      .sk-fading-circle .sk-circle10 {
+        -webkit-transform: rotate(270deg);
+        -ms-transform: rotate(270deg);
+        transform: rotate(270deg);
+      }
+
+      .sk-fading-circle .sk-circle11 {
+        -webkit-transform: rotate(300deg);
+        -ms-transform: rotate(300deg);
+        transform: rotate(300deg);
+      }
+
+      .sk-fading-circle .sk-circle12 {
+        -webkit-transform: rotate(330deg);
+        -ms-transform: rotate(330deg);
+        transform: rotate(330deg);
+      }
+
+      .sk-fading-circle .sk-circle2:before {
+        -webkit-animation-delay: -1.1s;
+        animation-delay: -1.1s;
+      }
+
+      .sk-fading-circle .sk-circle3:before {
+        -webkit-animation-delay: -1s;
+        animation-delay: -1s;
+      }
+
+      .sk-fading-circle .sk-circle4:before {
+        -webkit-animation-delay: -0.9s;
+        animation-delay: -0.9s;
+      }
+
+      .sk-fading-circle .sk-circle5:before {
+        -webkit-animation-delay: -0.8s;
+        animation-delay: -0.8s;
+      }
+
+      .sk-fading-circle .sk-circle6:before {
+        -webkit-animation-delay: -0.7s;
+        animation-delay: -0.7s;
+      }
+
+      .sk-fading-circle .sk-circle7:before {
+        -webkit-animation-delay: -0.6s;
+        animation-delay: -0.6s;
+      }
+
+      .sk-fading-circle .sk-circle8:before {
+        -webkit-animation-delay: -0.5s;
+        animation-delay: -0.5s;
+      }
+
+      .sk-fading-circle .sk-circle9:before {
+        -webkit-animation-delay: -0.4s;
+        animation-delay: -0.4s;
+      }
+
+      .sk-fading-circle .sk-circle10:before {
+        -webkit-animation-delay: -0.3s;
+        animation-delay: -0.3s;
+      }
+
+      .sk-fading-circle .sk-circle11:before {
+        -webkit-animation-delay: -0.2s;
+        animation-delay: -0.2s;
+      }
+
+      .sk-fading-circle .sk-circle12:before {
+        -webkit-animation-delay: -0.1s;
+        animation-delay: -0.1s;
+      }
+
+      @-webkit-keyframes sk-circleFadeDelay {
+        0%,
+        39%,
+        100% {
+          opacity: 0;
+        }
+
+        40% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes sk-circleFadeDelay {
+        0%,
+        39%,
+        100% {
+          opacity: 0;
+        }
+
+        40% {
+          opacity: 1;
+        }
+      }
+
+      /* 个人信息填写 以及个人信息修改界面*/
+      .profile,
+      .profile-edit {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 397px;
+        height: 566px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .profile .profile-title,
+      .profile-edit .profile-edit-title {
+        display: inline-block;
+        margin-top: 50px;
+        margin-bottom: 55px;
+        font-size: 30px;
+      }
+
+      .profile-edit .profile-edit-title {
+        margin-left: -200px;
+      }
+
+      .profile form,
+      .profile-edit form {
+        padding-left: 39px;
+      }
+
+      .profile div,
+      .profile-edit div {
+        columns: 2;
+        column-gap: 1px;
+        text-align: left;
+        width: 318px;
+        height: 34px;
+        margin-bottom: 18px;
+        border-bottom: 2px solid #ccc;
+        font-size: 18px;
+      }
+
+      .profile form input,
+      .profile-edit form input {
+        margin-left: -40px;
+        text-align: left;
+        font-size: 18px;
+        outline-style: none;
+        border: none;
+        background-color: transparent;
+      }
+
+      .profile form .profile-sex,
+      .profile-edit form .profile-sex {
+        columns: 1;
+        margin-left: -55px;
+        border: none;
+      }
+
+      .profile form .profile-sex input,
+      .profile-edit form .profile-sex input {
+        margin-left: 18px;
+        border: none;
+      }
+
+      /* .profile form div:nth-of-type(n + 5) input,
+      .profile-edit form div:nth-of-type(n + 5) input {
+        margin-left: 15px;
+      } */
+      #profile-submit,
+      #profile-edit-submit {
+        columns: 1;
+        margin: 0 auto;
+        width: 329px;
+        height: 38px;
+        font-size: 18px;
+        line-height: 38px;
+        text-align: center;
+        color: #fff;
+        background: rgba(0, 159, 232, 1);
+        border-radius: 19px;
+        cursor: pointer;
+      }
+
+      /* 公共取消样式 */
+      .close {
+        display: block;
+        position: absolute;
+        right: 42px;
+        top: 52px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .close::after {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: #333;
+        transform: rotate(-45deg);
+      }
+
+      .close::before {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: #333;
+        transform: rotate(45deg);
+      }
+
+      .icon-guanbi1{
+        display: block;
+        position: absolute;
+        right: 42px;
+        top: 52px;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .icon-guanbi1::after {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 16px;
+        height: 2px;
+        background: #333;
+        transform: rotate(-45deg);
+      }
+
+      .icon-guanbi1::before {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 16px;
+        height: 2px;
+        background: #333;
+        transform: rotate(45deg);
+      }
+      /* 公共取消样式2 */
+      .close2 {
+        display: block;
+        position: absolute;
+        right: 30px;
+        top: 30px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .close2::after {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: #333;
+        transform: rotate(-45deg);
+      }
+
+      .close2::before {
+        position: absolute;
+        top: 6px;
+        content: "";
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: #333;
+        transform: rotate(45deg);
+      }
+
+      /* 界面按钮 */
+      .menu {
+        display: none;
+        position: fixed;
+        top: 40px;
+        right: 40px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: 0px 1px 5px 0px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .menu .icon-arrow-up {
+        display: none;
+      }
+
+      .menu img {
+        margin-top: 7px;
+        width: 70%;
+      }
+
+      .ui-btn .iconfont {
+        line-height: 60px;
+        font-size: 40px;
+      }
+
+      .ui-btn .icon-daohang {
+        line-height: 60px;
+        font-size: 30px;
+      }
+      .ui-btn .icon-daohangw {
+        line-height: 60px;
+        font-size: 30px;
+      }
+
+      .menu-list {
+        display: none;
+        position: fixed;
+        top: 120px;
+        right: 40px;
+      }
+
+      .menu-li {
+        box-shadow: 0px 1px 5px 0px;
+        margin-bottom: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #fff;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .btn-selected {
+        background-color: #009fe8 !important;
+        color: #fff;
+      }
+
+      /* 底部按钮 */
+
+      .bottom-btn {
+        display: none;
+        position: fixed;
+        bottom: 44px;
+        right: 40px;
+      }
+      
+      .initPostion-btn,
+      .caizhitihuan-btn,
+      .commentary-btn,
+      .bgm-btn,
+      .common-btn,
+      .waijing-btn,
+      .cover-btn,
+      .setup-btn,
+      .signboard-btn,
+      .shubiao-btn {
+        vertical-align: bottom;
+        box-shadow: 0px 1px 5px 0px;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        margin-left: 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .setup-btn,
+      .initPostion-btn,
+      .caizhitihuan-btn,
+      .commentary-btn,
+      .bgm-btn,
+      .common-btn,
+      .waijing-btn,
+      .cover-btn {
+        display: none;
+      }
+
+      .icon-bianji,
+      .icon-signboard,
+      .icon-shubiao {
+        font-size: 40px;
+        line-height: 60px;
+      }
+      .icon-caizhitihuan,
+      .icon-jieshuoci,
+      .icon-beijingyin,
+      .icon-tongyong,
+      .icon-360waijing {
+        font-size: 25px;
+        line-height: 60px;
+      }
+      .icon-map {
+        font-size: 40px;
+        line-height: 60px;
+      }
+
+      .cover-btn .icon-xiangce {
+        font-size: 40px;
+        line-height: 60px;
+      }
+
+      .operating-instructions-box {
+        display: none;
+        width: 361px;
+        height: 361px;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        transition: ease;
+      }
+
+      .operating-instructions-box .close {
+        top: 20px;
+        right: 10px;
+      }
+
+      .bottom-btn img {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        transition: ease;
+      }
+
+      /* 名片面板 */
+    .resume-box {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 536px;
+      height: 470px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+    }
+
+    .resume-box-namebox {
+      margin-top: 72px;
+      margin-left: 60px;
+    }
+
+    .resume-box .resume-box-name {
+      height: 30px;
+      font-size: 30px;
+      line-height: 30px;
+      font-weight: bold;
+      color: rgba(51, 51, 51, 1);
+    }
+
+    .resume-box-detail {
+      margin-left: 60px;
+      color: #666666;
+    }
+
+    .resume-box-detail span {
+      margin-right: 20px;
+      vertical-align: middle;
+    }
+
+    .resume-box-detail-text {
+      font-size: 25px;
+    }
+
+      /* 个人信息面板 */
+      .profile-box {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 536px;
+        height: 470px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .profile-box-namebox {
+        margin-top: 72px;
+        margin-left: 60px;
+      }
+
+      .profile-box .profile-box-name {
+        height: 30px;
+        font-size: 30px;
+        line-height: 30px;
+        font-weight: bold;
+        color: rgba(51, 51, 51, 1);
+      }
+
+      .icon-nan,
+      .icon-nv {
+        display: inline-block;
+        font-size: 28px;
+        line-height: 28px;
+        color: #568ff0;
+      }
+
+      .icon-nv {
+        color: rgb(255, 121, 119);
+      }
+
+      .icon-nan::after,
+      .icon-nv::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 20px;
+        line-height: 15px;
+        background-color: rgba(182, 182, 182, 1);
+        margin: 0 0 0 18px;
+      }
+
+      .profile-box-edit {
+        display: inline-block;
+        width: 94px;
+        height: 30px;
+        margin-left: 12px;
+        text-align: center;
+        font-size: 14px;
+        line-height: 30px;
+        vertical-align: bottom;
+        border: 1px solid rgba(51, 51, 51, 1);
+        border-radius: 15px;
+      }
+
+      .profile-box-edit .icon-xiugai {
+        font-size: 16px;
+        line-height: 30px;
+      }
+
+      .profile-box-detail {
+        margin-left: 60px;
+        color: #666666;
+      }
+
+      .profile-box-detail span {
+        margin-right: 20px;
+        vertical-align: middle;
+      }
+
+      .profile-box-detail-text {
+        font-size: 25px;
+      }
+
+      .cardcase-btn {
+        position: absolute;
+        left: 65px;
+        top: 380px;
+        width: 150px;
+        height: 46px;
+        background: rgba(0, 159, 232, 1);
+        border-radius: 23px;
+        color: #fff;
+        text-align: center;
+        line-height: 46px;
+        cursor: pointer;
+      }
+
+      .cardcase-btn .icon-mingpian {
+        transform: translateY(2px);
+        font-size: 26px;
+        color: #fff;
+      }
+
+      .icon-tuichu {
+        font-size: 17px;
+      }
+
+      .logout {
+        position: absolute;
+        top: 380px;
+        right: 65px;
+        width: 150px;
+        height: 46px;
+        background: rgba(241, 61, 61, 1);
+        border-radius: 23px;
+        color: #fff;
+        text-align: center;
+        line-height: 46px;
+        cursor: pointer;
+      }
+
+      /* 通讯录 */
+      .cardcase-box {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 427px;
+        height: 686px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .cardcase-box .close {
+        top: 20px;
+        right: 20px;
+      }
+
+      .cardcase-box-header {
+        margin-left: 36px;
+        margin-top: 45px;
+      }
+
+      .cardcase-box-title {
+        height: 24px;
+        line-height: 24px;
+        vertical-align: top;
+      }
+
+      .cardcase-box-header .icon-mingpian {
+        margin-top: -5px;
+        font-size: 34px;
+      }
+
+      .cardcase-box-header .cardcase-text {
+        margin-left: 10px;
+        font-size: 24px;
+        line-height: 24px;
+        vertical-align: top;
+      }
+
+      .cardcase-box-export {
+        position: absolute;
+        top: 42px;
+        right: 42px;
+        width: 100px;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid rgba(0, 160, 232, 1);
+        border-radius: 15px;
+        font-size: 14px;
+        text-align: center;
+        color: rgba(0, 160, 232, 1);
+      }
+
+      #cardcase-box-main {
+        position: relative;
+        margin-top: 44px;
+        width: 370px;
+        height: 546px;
+      }
+
+      .business-card {
+        position: relative;
+        margin-top: 33px;
+        padding-top: 22px;
+        box-sizing: border-box;
+        width: 353px;
+        height: 82px;
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 1px 4px 11px 0px rgba(54, 54, 54, 0.06);
+        border-radius: 12px;
+      }
+
+      .business-card:first-child {
+        margin-top: 15px;
+      }
+
+      .icon-mingpiantouxiang-bg {
+        position: absolute;
+        left: 26px;
+        top: -15px;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        background-color: #00a0e8;
+        border-radius: 10px;
+      }
+
+      .icon-mingpiantouxiang-01 {
+        font-size: 20px;
+      }
+
+      .business-card-content {
+        margin-left: 25px;
+        margin-right: 0;
+      }
+
+      .business-card-content p {
+        margin: 0;
+        margin-bottom: 12px;
+      }
+
+      .business-card-name {
+        margin-top: 0;
+        font-size: 20px;
+        color: #333;
+      }
+
+      svg.icon-shouji {
+        font-size: 20px;
+        color: #f57f5f;
+      }
+
+      .redirect-exhibition {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 56px;
+        height: 72px;
+        background: rgba(0, 160, 232, 1);
+        z-index: 2;
+      }
+
+      .redirect-exhibition::before {
+        content: "";
+        width: 50px;
+        height: 72px;
+        transform: skewX(-30deg);
+        background: rgba(0, 160, 232, 1);
+        border-radius: 8px 0 0 8px;
+        position: absolute;
+        left: -28px;
+        top: 0;
+      }
+
+      .redirect-exhibition span {
+        position: absolute;
+        top: 28px;
+        left: -10px;
+        font-size: 14px;
+        color: #fff;
+      }
+
+      /* 分享面板 */
+      .share-box {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 838px;
+        height: 456px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      #share-title {
+        position: absolute;
+        left: 52px;
+        top: 52px;
+        width: 185px;
+        height: 30px;
+
+        font-weight: bold;
+        font-size: 30px;
+        color: rgba(51, 51, 51, 1);
+        line-height: 30px;
+      }
+
+      #share-title-description {
+        position: absolute;
+        margin: 0;
+        left: 52px;
+        top: 124px;
+        width: 365px;
+        height: 18px;
+        font-size: 18px;
+        color: rgba(0, 0, 0, 1);
+      }
+
+      .share-link-box {
+        position: absolute;
+        left: 52px;
+        top: 165px;
+        width: 700px;
+        height: 41px;
+      }
+
+      #share-link {
+        float: left;
+        width: 550px;
+        height: 40px;
+        background: rgba(225, 225, 225, 1);
+        border-radius: 6px;
+      }
+
+      .icon-link {
+        margin: 0 9px 0 7px;
+        font-size: 23px;
+        color: #b9b9b9;
+        line-height: 40px;
+      }
+
+      #share-link-text {
+        outline-style: none;
+        border-style: none;
+        height: 40px;
+        width: 450px;
+        font-size: 18px;
+        color: #333;
+        background-color: transparent;
+      }
+
+      .share-link-copy {
+        float: left;
+        margin-left: 9px;
+        width: 108px;
+        height: 40px;
+        text-align: center;
+        font-size: 18px;
+        line-height: 40px;
+        color: #fff;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      #qr-code-box {
+        position: absolute;
+        top: 250px;
+        left: 52px;
+        width: 168px;
+        height: 168px;
+
+        line-height: 168px;
+        font-size: 0;
+        text-align: center;
+        background: rgba(218, 218, 218, 1);
+        border-radius: 8px;
+      }
+
+      #qr-code-box #qrcode {
+        margin-top: 10px;
+      }
+
+      #save-qr-btn {
+        text-decoration: none;
+        position: absolute;
+        left: 250px;
+        top: 315px;
+        width: 108px;
+        height: 40px;
+        text-align: center;
+        font-size: 18px;
+        line-height: 40px;
+        color: #fff;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+        border-radius: 6px;
+      }
+
+      /* 公告板 */
+      .board-box {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 841px;
+        height: 347px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .board-box .board-title {
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        width: 120px;
+        height: 30px;
+        margin: 0;
+        font-size: 30px;
+        font-weight: 400;
+        color: rgba(51, 51, 51, 1);
+        line-height: 30px;
+      }
+
+      .board-box .board-main {
+        position: absolute;
+        top: 118px;
+        left: 52px;
+      }
+
+      .board-box .board-main div {
+        float: left;
+        width: 167px;
+        height: 167px;
+        margin-right: 23px;
+        border-radius: 8px;
+        color: #fff;
+        text-align: center;
+      }
+
+      .board-box .board-main p.iconfont {
+        margin: 23px 0 0 0;
+        font-size: 66px;
+      }
+
+      .board-box .board-main p.icon-renshu {
+        margin-top: -5px;
+        font-size: 90px;
+      }
+
+      .board-box .board-main span {
+        display: inline-block;
+        margin: 10px 0 0 0;
+        font-size: 16px;
+      }
+
+      .board-box .board-main p.num {
+        margin: 6px 0 0 0;
+        font-size: 24px;
+      }
+
+      .board-box .board-main .views-total {
+        background-color: #5200e8;
+      }
+
+      .board-box .board-main .online-total {
+        background-color: #f4407b;
+      }
+
+      .board-box .board-main .views-today {
+        background-color: #009fe8;
+      }
+
+      .board-box .board-main .avg-time {
+        background-color: #27b66d;
+      }
+
+      .board-box .board-main .sk-fading-circle {
+        margin: 0 0 0 66px;
+        width: 35px;
+        height: 35px;
+        position: relative;
+      }
+
+      .board-box .board-main .sk-fading-circle .sk-circle {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      /* 在线人数 */
+      .online-number {
+        display: none;
+        position: fixed;
+        left: 44px;
+        bottom: 44px;
+        width: 213px;
+        height: 40px;
+        text-align: center;
+        line-height: 40px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+      }
+
+      /* 在线列表 */
+      .online-chat {
+        display: none;
+        position: fixed;
+        left: 44px;
+        bottom: 44px;
+        width: 804px;
+        height: 826px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .online-num {
+        margin-top: 33px;
+        margin-left: 45px;
+      }
+
+      .icon-yonghu {
+        font-size: 26px;
+      }
+
+      .online-num-text {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .online-chat-list {
+        position: relative;
+        width: 740px;
+        height: 720px;
+        margin-top: 32px;
+        margin-left: 46px;
+      }
+
+      .online-chat-entry {
+        width: 720px;
+        height: 42px;
+        margin-top: 12px;
+        /* border-bottom :  1px  solid #CBCBCB; */
+      }
+
+      .online-chat-entry::after {
+        content: "";
+        display: inline-block;
+        width: 720px;
+        /* height: 2px; */
+        border-bottom: 1px solid #cbcbcb;
+      }
+
+      .online-chat-profile {
+        display: inline-block;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .online-chat-company {
+        margin-left: 80px;
+      }
+
+      .online-chat-function {
+        display: inline-block;
+        margin-left: 86px;
+      }
+
+      .online-chat-function .icon {
+        margin-left: 18px;
+        font-size: 30px;
+      }
+
+      .online-chat-function .icon:first-child {
+        margin-left: 0;
+        font-size: 30px;
+      }
+
+      .online-chat-function span {
+        display: inline-block;
+        margin-top: -10px;
+        margin-left: 5px;
+        font-size: 14px;
+        vertical-align: middle;
+      }
+
+      /* 上传提示 */
+      .upload-alert {
+        display: none;
+        position: fixed;
+        top: 218px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        height: 40px;
+        background-color: #fff;
+        border-radius: 20px;
+        z-index: 9999;
+      }
+
+      .upload-alert .sk-fading-circle {
+        width: 20px;
+        height: 20px;
+        margin: 10px 10px 0 10px;
+      }
+
+      .upload-alert .sk-fading-circle .sk-circle::before {
+        background-color: #009fe8;
+      }
+
+      .upload-alert span {
+        line-height: 40px;
+        color: #009fe8;
+      }
+
+      .progressNum {
+        margin-right: 10px;
+      }
+
+      .upload-success,
+      .system-success{
+        display: none;
+        position: fixed;
+        top: 118px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 40px;
+        background-color: #fff;
+        border-radius: 20px;
+        z-index: 9999;
+      }
+
+      .icon-chenggong {
+        transform: translate(10px, 2px);
+        font-size: 24px;
+        line-height: 40px;
+      }
+
+      .upload-success-text,
+      .system-success-text{
+        line-height: 40px;
+        color: #2bbd76;
+        margin-left: 20px;
+      }
+
+      /* 鼠标指示 */
+      .mouse-enter {
+        cursor: pointer;
+      }
+
+      /* 视频编辑界面 */
+      .diy-video {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-video-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-shipin {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-video-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      /* .icon-yunpanlogo- {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      } */
+      #diy-video-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #diy-video-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-video-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-video-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-video-edit-btn {
+        float: right;
+      }
+
+      /* 视频编辑界面 */
+      .diy-tietu {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-tietu-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-tupian {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-tietu-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      /* .icon-yunpanlogo- {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      } */
+      #diy-tietu-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #diy-tietu-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-tietu-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-tietu-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-tietu-edit-btn {
+        float: right;
+      }
+
+      /* 大标题编辑 */
+      .diy-big {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 550px;
+        border-radius: 30px;
+        background-color: rgba(225, 225, 225, 0.9);
+      }
+
+      .diy-big-title {
+        margin: 47px 0 18px 47px;
+        width: 256px;
+        height: 45px;
+        font-size: 32px;
+        line-height: 45px;
+      }
+
+      .diy-guan-input-bg {
+        margin: 0 auto;
+        width: 515px;
+        height: 44px;
+        background-color: #ededed;
+        border-radius: 22px;
+        line-height: 44px;
+      }
+
+      #diy-guan-input {
+        margin-left: 25px;
+        margin-bottom: 30px;
+        width: 465px;
+        height: 25px;
+        background-color: transparent;
+        border: none;
+        outline-style: none;
+      }
+
+      option {
+        font-size: 18px;
+      }
+
+      .diy-guan-title {
+        position: relative;
+      }
+
+      #diy-guan-title-fontfamily {
+        margin-left: 47px;
+        width: 124px;
+        border: none;
+        outline: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      #diy-guan-title-fontsize {
+        margin-left: 55px;
+        width: 56px;
+        border: none;
+        outline: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      #diy-guan-title-color {
+        display: inline-block;
+        margin-left: 55px;
+        height: 23px;
+        width: 18px;
+        text-align: center;
+        line-height: 24px;
+        font-size: 24px;
+        border-bottom: #000 3px solid;
+
+        cursor: pointer;
+      }
+
+      #diy-guan-title-color-picker {
+        position: absolute;
+        z-index: 1;
+        right: 5px;
+      }
+      .guan-font-example {
+        margin: 30px auto 20px;
+        width: 350px;
+        height: 65px;
+        line-height: 65px;
+        font-size: 18px;
+        text-align: center;
+        border-bottom: #6d7278 4px solid;
+      }
+
+      .diy-guan-save {
+        margin: 60px auto 0;
+        width: 120px;
+        height: 40px;
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      /* 通用编辑 */
+      .diy-common {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 860px;
+        border-radius: 30px;
+        background-color: #fff;
+        opacity: 0.9;
+        overflow-y: scroll;
+      }
+
+      .diy-common::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-common-title {
+        margin: 47px 0 18px 47px;
+        width: 256px;
+        height: 45px;
+        font-size: 32px;
+        line-height: 45px;
+      }
+
+      option {
+        font-size: 18px;
+      }
+
+      .diy-hua-title {
+        position: relative;
+      }
+
+      #diy-hua-title-fontfamily {
+        margin-left: 47px;
+        width: 124px;
+        border: none;
+        outline: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      #diy-hua-title-fontsize {
+        margin-left: 55px;
+        width: 56px;
+        border: none;
+        outline: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      #diy-hua-title-color {
+        display: inline-block;
+        margin-left: 55px;
+        height: 23px;
+        width: 18px;
+        text-align: center;
+        line-height: 24px;
+        font-size: 24px;
+        border-bottom: #000 3px solid;
+
+        cursor: pointer;
+      }
+
+      #diy-hua-title-color-picker {
+        position: absolute;
+        z-index: 1;
+        right: 5px;
+      }
+      .font-example {
+        margin: 0 auto;
+        width: 350px;
+        height: 65px;
+        line-height: 65px;
+        font-size: 18px;
+        text-align: center;
+        border-bottom: #6d7278 4px solid;
+      }
+
+      /* 封面编辑界面 */
+      .diy-cover-main {
+        position: relative;
+      }
+
+      .diy-cover-main .diy-common-title {
+        margin: 18px 0 18px 47px;
+      }
+
+      .diy-cover-pre {
+        position: relative;
+        margin-left: 52px;
+        width: 400px;
+        height: 200px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      #diy-cover-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+      }
+
+      #diy-cover-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-cover-add-btn {
+        position: absolute;
+        right: 20px;
+        bottom: 80px;
+        width: 120px;
+        height: 40px;
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      /* 封面编辑界面 */
+      .diy-waijing-main {
+        position: relative;
+      }
+
+      .diy-waijing-main .diy-common-title {
+        margin: 18px 0 18px 47px;
+      }
+
+      .diy-waijing-pre {
+        position: relative;
+        margin-left: 52px;
+        width: 400px;
+        height: 200px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      /* .icon-yunpanlogo- {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      } */
+      #diy-waijing-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+      }
+
+      #diy-waijing-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-waijing-add-btn {
+        position: absolute;
+        right: 20px;
+        bottom: 80px;
+        width: 120px;
+        height: 40px;
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      /* 封面编辑界面 */
+      .diy-favicon-main {
+        position: relative;
+      }
+
+      .diy-favicon-main .diy-common-title {
+        margin: 18px 0 18px 47px;
+      }
+
+      .diy-favicon-pre {
+        position: relative;
+        margin-left: 52px;
+        width: 400px;
+        height: 200px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      /* .icon-yunpanlogo- {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      } */
+      #diy-favicon-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+      }
+
+      #diy-favicon-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 200px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-favicon-add-btn {
+        position: absolute;
+        right: 20px;
+        bottom: 80px;
+        width: 120px;
+        height: 40px;
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-common-save {
+        margin: 35px auto 35px;
+        width: 120px;
+        height: 40px;
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      /* 背景音 */
+      .diy-bgm {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 540px;
+        border-radius: 30px;
+        background-color: rgba(225, 225, 225, 0.9);
+      }
+
+      .diy-bgm-title {
+        margin-top: 54px;
+        margin-left: 48px;
+        width: 200px;
+        height: 32px;
+        font-size: 30px;
+      }
+
+      .diy-bgm-main {
+        overflow-x: scroll;
+        margin: 0 auto;
+        width: 516px;
+        height: 300px;
+      }
+
+      .diy-bgm-main::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-bgm-lobby {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .diy-bgm-exhibit {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 18px;
+      }
+
+      .diy-bgm-room {
+        height: 44px;
+        line-height: 44px;
+        font-size: 24px;
+      }
+
+      .diy-bgm-music-bg {
+        position: relative;
+        display: inline-block;
+        width: 420px;
+        height: 44px;
+        line-height: 44px;
+        background-color: #ececec;
+        border-radius: 22px;
+      }
+
+      .diy-bgm-music-name {
+        margin-left: 22px;
+      }
+
+      .diy-bgm-file {
+        position: absolute;
+        right: 0;
+        width: 420px;
+        height: 44px;
+        border-radius: 22px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-bgm-delete-music {
+        display: none;
+        position: absolute;
+        top: 16px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        font-size: 0;
+        cursor: pointer;
+      }
+
+      .icon-chacha {
+        font-size: 12px;
+      }
+
+      .icon-yinlejia {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 22px;
+        color: #6d7278;
+        cursor: pointer;
+      }
+
+      .diy-bgm-save {
+        position: absolute;
+        height: 40px;
+        width: 110px;
+        background-color: #009fe9;
+        bottom: 34px;
+        left: 250px;
+        border-radius: 20px;
+        line-height: 40px;
+        font-size: 21px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      /* 解说词 */
+      .diy-des {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 540px;
+        border-radius: 30px;
+        background-color: rgba(225, 225, 225, 0.9);
+      }
+
+      .diy-des-title {
+        margin-top: 54px;
+        margin-left: 48px;
+        width: 200px;
+        height: 32px;
+        font-size: 30px;
+      }
+
+      .diy-des-main {
+        overflow-x: scroll;
+        margin: 0 auto;
+        width: 516px;
+        height: 300px;
+      }
+
+      .diy-des-main::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-des-lobby {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .diy-des-exhibit {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 18px;
+      }
+
+      .diy-des-room {
+        height: 44px;
+        line-height: 44px;
+        font-size: 24px;
+      }
+
+      .diy-des-music-bg {
+        position: relative;
+        display: inline-block;
+        width: 420px;
+        height: 44px;
+        line-height: 44px;
+        background-color: #ececec;
+        border-radius: 22px;
+      }
+
+      .diy-des-music-name {
+        margin-left: 22px;
+      }
+
+      .diy-des-file {
+        position: absolute;
+        right: 0;
+        width: 420px;
+        height: 44px;
+        border-radius: 22px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-des-delete-music {
+        display: none;
+        position: absolute;
+        top: 16px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        font-size: 0;
+        cursor: pointer;
+      }
+
+      .icon-chacha {
+        font-size: 12px;
+      }
+
+      .icon-yinlejia {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 22px;
+        color: #6d7278;
+        cursor: pointer;
+      }
+
+      .diy-des-save {
+        position: absolute;
+        height: 40px;
+        width: 110px;
+        background-color: #009fe9;
+        bottom: 34px;
+        left: 250px;
+        border-radius: 20px;
+        line-height: 40px;
+        font-size: 21px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      /* 展画diy */
+      .diy-pic {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 838px;
+        height: 471px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+      }
+
+      .diy-pic-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-fuzhi {
+        font-size: 30px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-language {
+        position: absolute;
+        top: 52px;
+        right: 64px;
+      }
+
+      .diy-pic-chinese,
+      .diy-pic-english {
+        display: inline-block;
+        width: 70px;
+        height: 26px;
+        text-align: center;
+        line-height: 26px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 13px 0px 0px 13px;
+        cursor: pointer;
+      }
+
+      .diy-pic-english {
+        border-radius: 0px 13px 13px 0px;
+      }
+
+      .diy-pic-pre {
+        position: relative;
+        float: left;
+        width: 256px;
+        height: 256px;
+        margin-top: 12px;
+        margin-left: 52px;
+        text-align: center;
+        background-color: #ccc;
+        border-radius: 8px;
+      }
+
+      #img-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #diy-pic-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .icon-tupian {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      }
+
+      .diy-pic-des-box {
+        overflow: hidden;
+        /* border: 1px red solid; */
+        width: 485px;
+        height: 203px;
+      }
+
+      .diy-pic-des {
+        float: left;
+        margin-left: 25px;
+      }
+
+      .diy-pic-des-title {
+        margin: 9px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .diy-pic-des-title::after {
+        content: "*";
+        color: red;
+      }
+
+      #diy-pic-title-input {
+        resize: none;
+        width: 441px;
+        height: 34px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+      }
+
+      #diy-pic-des-input {
+        width: 441px;
+        height: 80px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+        resize: none;
+      }
+
+      #diy-pic-des-input::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-pic-des-en {
+        float: left;
+        margin-left: 25px;
+      }
+
+      .diy-pic-des-en-title {
+        margin: 9px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .diy-pic-des-en-title::after {
+        content: "*";
+        color: red;
+      }
+
+      #diy-pic-en-title-input {
+        resize: none;
+        width: 441px;
+        height: 34px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+      }
+
+      #diy-pic-des-en-input {
+        width: 441px;
+        height: 80px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+        resize: none;
+      }
+
+      #diy-pic-des-en-input::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-pic-resource {
+        float: left;
+        margin-left: 25px;
+      }
+
+      .diy-pic-resource-title {
+        margin: 6px 0px;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .diy-pic-resource-icon {
+        float: left;
+        width: 34px;
+        height: 34px;
+        background: rgba(211, 211, 211, 1);
+        border-radius: 50%;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .icon-tuji-DIY-bgc {
+        background-color: #662d91;
+      }
+
+      .icon-360-DIY-bgc {
+        background-color: #ed1c24;
+      }
+
+      .icon-3D-DIY-bgc {
+        background-color: #f15a24;
+      }
+
+      .icon-shipin-DIY-bgc {
+        background-color: #37bf71;
+      }
+
+      .icon-lianjie-DIY-bgc {
+        background-color: #009fe8;
+      }
+      .icon-pdf-DIY-bgc {
+        background-color: #33cccc;
+      }
+
+      .diy-pic-resource-icon:nth-of-type(n + 2) {
+        margin-left: 11px;
+      }
+
+      .diy-pic-resource-icon .iconfont {
+        margin-top: -10px;
+        font-size: 22px;
+        line-height: 34px;
+        color: #aeaeae;
+      }
+
+      .icon-tuji-DIY-bgc .iconfont {
+        color: #fff;
+      }
+
+      .icon-360-DIY-bgc .iconfont {
+        color: #fff;
+      }
+
+      .icon-3D-DIY-bgc .iconfont {
+        color: #fff;
+      }
+
+      .icon-shipin-DIY-bgc .iconfont {
+        color: #fff;
+      }
+
+      .icon-lianjie-DIY-bgc .iconfont {
+        color: #fff;
+      }
+      .icon-pdf-DIY-bgc .iconfont {
+        color: #fff;
+      }
+      .switch-diy-pic-show-direction-box {
+        right: 54px;
+        bottom: 124px;
+      }
+      .switch-pic-show-direction-box {
+        position: absolute;
+        right: 56px;
+        bottom: 123px;
+      }
+      .switch-pic-show-direction-box span {
+        vertical-align: text-top;
+      }
+      .switch-pic-show-direction {
+        position: relative;
+        width: 42px;
+        height: 21px;
+        background-color: #dadada;
+        border-radius: 30px;
+        border: none;
+        outline: none;
+        vertical-align: text-top;
+        -webkit-appearance: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .switch-pic-show-direction::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        height: 100%;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .switch-pic-show-direction:checked {
+        background-color: #86c0fa;
+      }
+
+      .switch-pic-show-direction:checked::after {
+        left: 50%;
+      }
+      .diy-pic-btn {
+        float: right;
+        width: 134px;
+        height: 40px;
+        margin-top: 80px;
+        font-size: 20px;
+        line-height: 40px;
+        text-align: center;
+        color: #fff;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+
+      .diy-pic-cancel {
+        margin-top: 14px;
+        margin-right: 27px;
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 2px 8px 0px rgba(241, 61, 61, 0.31);
+      }
+
+      .diy-pic-save {
+        margin-right: 64px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 2px 8px 0px rgba(0, 159, 232, 0.31);
+      }
+
+      /* 链接添加界面 */
+      .diy-pic-link {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 698px;
+        height: 200px;
+        line-height: 66px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 6px;
+        z-index: 100;
+      }
+
+      .diy-pic-link-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-lianjie {
+        font-size: 26px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-link-div {
+        float: left;
+        width: 350px;
+        height: 42px;
+        margin-top: 12px;
+        margin-left: 52px;
+        line-height: 42px;
+        background: rgba(236, 236, 236, 1);
+        border-radius: 6px;
+      }
+
+      .diy-pic-link-input {
+        margin: 0;
+        padding: 0;
+        width: 330px;
+        height: 42px;
+        margin-left: 10px;
+        outline-style: none;
+        background: rgba(236, 236, 236, 1);
+        border: none;
+        border-radius: 6px;
+      }
+
+      .diy-pic-link-btn {
+        float: right;
+        width: 108px;
+        height: 42px;
+        margin-top: 12px;
+        margin-right: 30px;
+        border-radius: 21px;
+        line-height: 42px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .diy-pic-link-save {
+        margin-right: 15px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 2px 8px 0px rgba(0, 159, 232, 0.54);
+      }
+
+      .diy-pic-link-cancel {
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 2px 8px 0px rgba(241, 61, 61, 0.42);
+      }
+
+      /*360添加界面 */
+      .diy-pic-360-link {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 698px;
+        height: 200px;
+        line-height: 66px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 6px;
+        z-index: 100;
+      }
+
+      .diy-pic-360-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-quanjing {
+        font-size: 20px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-360-link-div {
+        float: left;
+        width: 350px;
+        height: 42px;
+        margin-top: 12px;
+        margin-left: 52px;
+        line-height: 42px;
+        background: rgba(236, 236, 236, 1);
+        border-radius: 6px;
+      }
+
+      .diy-pic-360-link-input {
+        margin: 0;
+        padding: 0;
+        width: 330px;
+        height: 42px;
+        margin-left: 10px;
+        outline-style: none;
+        background: rgba(236, 236, 236, 1);
+        border: none;
+        border-radius: 6px;
+      }
+
+      .diy-pic-360-link-btn {
+        float: right;
+        width: 108px;
+        height: 42px;
+        margin-top: 12px;
+        margin-right: 30px;
+        border-radius: 21px;
+        line-height: 42px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .diy-pic-360-link-save {
+        margin-right: 15px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 2px 8px 0px rgba(0, 159, 232, 0.54);
+      }
+
+      .diy-pic-360-link-cancel {
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 2px 8px 0px rgba(241, 61, 61, 0.42);
+      }
+
+      /* 展画内视频编辑界面 */
+      .diy-videos {
+        display: none;
+        position: fixed;
+        width: 771px;
+        min-height: 314px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: #fff;
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-videos-title-box {
+        text-align: initial;
+      }
+
+      .diy-pic-videos-title {
+        margin-left: 33px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 150px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-xiangce {
+        font-size: 20px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-videos-main {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        margin-left: 33px;
+        width: 706px;
+      }
+
+      .diy-videos-box {
+        position: relative;
+        width: 126px;
+        height: 126px;
+        margin-right: 19px;
+        background-color: #d4d4d4;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .diy-videos-pic {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 126px;
+        height: 126px;
+        border-radius: 6px;
+      }
+
+      .diy-videos-box:nth-of-type(5n + 5) {
+        margin-right: 0px;
+      }
+
+      .diy-videos-box:nth-of-type(n + 6) {
+        margin-top: 19px;
+      }
+
+      .diy-videos-box .icon-tianjia1 {
+        line-height: 126px;
+        font-size: 80px;
+        color: #fff;
+      }
+
+      .diy-videos-box .icon-jian {
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 24px;
+        color: red;
+        z-index: 1;
+      }
+
+      .diy-videos-btn-box {
+        margin: 50px auto 41px;
+        display: inline-block;
+      }
+
+      /* .diy-videos-btn-cancel {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        margin-right: 36px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 3px 9px 0px rgba(241, 61, 61, 0.54);
+        border-radius: 6px;
+      } */
+      .diy-videos-btn-save {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+        border-radius: 20.5px;
+        cursor: pointer;
+      }
+      .diy-pic-video {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-video-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-shipin {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-video-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      .icon-yunpanlogo- {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      }
+
+      #pic-video-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #pic-video-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-pic-video-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-video-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-video-edit-btn {
+        float: right;
+      }
+
+      /* 展画内模型编辑界面 */
+      .diy-models {
+        display: none;
+        position: fixed;
+        width: 771px;
+        min-height: 314px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: #fff;
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-models-title-box {
+        text-align: initial;
+      }
+
+      .diy-pic-models-title {
+        margin-left: 33px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 150px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-xiangce {
+        font-size: 20px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-models-main {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        margin-left: 33px;
+        width: 706px;
+      }
+
+      .diy-models-box {
+        position: relative;
+        width: 126px;
+        height: 126px;
+        margin-right: 19px;
+        background-color: #d4d4d4;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .diy-models-pic {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 126px;
+        height: 126px;
+        border-radius: 6px;
+      }
+      #models-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+      .diy-models-box:nth-of-type(5n + 5) {
+        margin-right: 0px;
+      }
+
+      .diy-models-box:nth-of-type(n + 6) {
+        margin-top: 19px;
+      }
+
+      .diy-models-box .icon-tianjia1 {
+        line-height: 126px;
+        font-size: 80px;
+        color: #fff;
+      }
+
+      .diy-models-box .icon-jian {
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 24px;
+        color: red;
+        z-index: 1;
+      }
+
+      .diy-models-btn-box {
+        margin: 50px auto 41px;
+        display: inline-block;
+      }
+
+      /* .diy-models-btn-cancel {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        margin-right: 36px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 3px 9px 0px rgba(241, 61, 61, 0.54);
+        border-radius: 6px;
+      } */
+      .diy-models-btn-save {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+        border-radius: 20.5px;
+        cursor: pointer;
+      }
+      .diy-pic-model {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-model-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-moxing {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-model-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      .icon-icon-damoxingwenjian {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      }
+
+      #pic-model-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #pic-model-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-pic-model-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-model-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-model-edit-btn {
+        float: right;
+      }
+      /* 展画内pdf编辑界面 */
+      .diy-pic-pdf {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-pdf-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-pdf2 {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-pic-pdf-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      .icon-pdf {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      }
+
+      #pic-pdf-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+      }
+
+      #pic-pdf-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-pic-pdf-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-pdf-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-pic-pdf-edit-btn {
+        float: right;
+      }
+
+      /* 图集编辑界面 */
+      .diy-album {
+        display: none;
+        position: fixed;
+        width: 771px;
+        min-height: 314px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: #fff;
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-pic-album-title-box {
+        text-align: initial;
+      }
+
+      .diy-pic-album-title {
+        margin-left: 33px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-xiangce {
+        font-size: 20px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-album-main {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        margin-left: 33px;
+        width: 706px;
+      }
+
+      .diy-album-box {
+        position: relative;
+        width: 126px;
+        height: 126px;
+        margin-right: 19px;
+        background-color: #d4d4d4;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .diy-album-pic {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 126px;
+        height: 126px;
+        border-radius: 6px;
+      }
+
+      .diy-album-box:nth-of-type(5n + 5) {
+        margin-right: 0px;
+      }
+
+      .diy-album-box:nth-of-type(n + 6) {
+        margin-top: 19px;
+      }
+
+      .diy-album-box .icon-tianjia {
+        line-height: 126px;
+        font-size: 80px;
+        color: #fff;
+      }
+
+      .diy-album-box .icon-jian {
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 24px;
+        color: red;
+        z-index: 1;
+      }
+
+      .diy-album-btn-box {
+        margin: 50px auto 41px;
+        display: inline-block;
+      }
+
+      /* .diy-album-btn-cancel {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        margin-right: 36px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 3px 9px 0px rgba(241, 61, 61, 0.54);
+        border-radius: 6px;
+      } */
+      .diy-album-btn-save {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+        border-radius: 20.5px;
+        cursor: pointer;
+      }
+
+      /* 图集添加界面 */
+      .diy-album-add-box {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 771px;
+        height: 314px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-album-add-language {
+        position: absolute;
+        top: 40px;
+        right: 38px;
+      }
+
+      .diy-album-add-chinese,
+      .diy-album-add-english {
+        display: inline-block;
+        width: 70px;
+        height: 26px;
+        text-align: center;
+        line-height: 26px;
+        background: rgba(238, 238, 238, 1);
+        border-radius: 13px 0px 0px 13px;
+        cursor: pointer;
+      }
+
+      .diy-album-add-english {
+        border-radius: 0px 13px 13px 0px;
+      }
+
+      .diy-album-add-pre {
+        position: relative;
+        float: left;
+        width: 232px;
+        height: 232px;
+        margin-top: 41px;
+        margin-left: 41px;
+        text-align: center;
+        background-color: #ccc;
+        border-radius: 8px;
+      }
+
+      #album-prev-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 232px;
+        height: 232px;
+      }
+
+      #album-pic-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 232px;
+        height: 232px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .icon-tianjia {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 42px;
+        color: #fff;
+      }
+
+      /* 图集图片描述 */
+      .diy-album-add-box-des {
+        overflow: hidden;
+        float: left;
+        margin-top: 34px;
+        margin-left: 25px;
+        width: 447px;
+        height: 185px;
+      }
+
+      .diy-album-add-box-des-title {
+        margin: 9px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .diy-album-add-box-des-title::after {
+        content: "*";
+        color: red;
+      }
+
+      #diy-album-add-box-title-input {
+        resize: none;
+        width: 441px;
+        height: 34px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+      }
+
+      #diy-album-add-box-des-input {
+        width: 441px;
+        height: 62px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        font-size: 16px;
+        border-radius: 6px;
+        outline-style: none;
+        resize: none;
+      }
+
+      #diy-album-add-box-des-input::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-album-add-box-en-des-title {
+        margin: 9px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .diy-album-add-box-en-des-title::after {
+        content: "*";
+        color: red;
+      }
+
+      #diy-album-add-box-en-title-input {
+        resize: none;
+        width: 441px;
+        height: 34px;
+        font-size: 16px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        border-radius: 6px;
+        outline-style: none;
+      }
+
+      #diy-album-add-box-en-des-input {
+        width: 441px;
+        height: 62px;
+        border: 1px solid rgba(0, 159, 232, 1);
+        font-size: 16px;
+        border-radius: 6px;
+        outline-style: none;
+        resize: none;
+      }
+
+      #diy-album-add-box-en-des-input::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-album-add-btn-box {
+        float: left;
+        margin-top: 12px;
+        margin-left: 198px;
+      }
+
+      .diy-album-add-btn-box .diy-album-add-cancel,
+      .diy-album-add-btn-box .diy-album-add-save {
+        display: inline-block;
+        width: 108px;
+        height: 41px;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
+        line-height: 41px;
+        background: rgba(241, 61, 61, 1);
+        box-shadow: 0px 3px 9px 0px rgba(241, 61, 61, 0.54);
+        border-radius: 20.5px;
+      }
+
+      .diy-album-add-btn-box .diy-album-add-save {
+        margin-left: 54px;
+        background: rgba(0, 159, 232, 1);
+        box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
+      }
+
+      /* 问题编辑 */
+      .diy-question {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 820px;
+        background-color: #fff;
+        border-radius: 31px;
+      }
+
+      .diy-question-title {
+        margin: 0;
+        margin: 47px 0 31px 47px;
+        width: 192px;
+        height: 32px;
+        font-size: 32px;
+        color: rgba(0, 0, 0, 1);
+        line-height: 32px;
+      }
+
+      .diy-question-main {
+        width: 516px;
+        height: 612px;
+        margin: 0 auto;
+        overflow-y: scroll;
+        overflow-x: none;
+      }
+
+      .diy-question-main::-webkit-scrollbar {
+        display: none;
+      }
+
+      .diy-question-box {
+        width: 516px;
+        min-height: 280px;
+      }
+
+      .diy-question-box:nth-child(n + 2) {
+        margin-top: 30px;
+        width: 516px;
+        min-height: 280px;
+      }
+
+      .diy-question-q {
+        display: flex;
+        justify-content: space-between;
+        width: 516px;
+        height: 44px;
+      }
+
+      .diy-question-no {
+        height: 44px;
+        line-height: 44px;
+        font-size: 24px;
+        color: rgba(0, 0, 0, 1);
+      }
+
+      .diy-question-input-bg {
+        width: 474px;
+        height: 44px;
+        background: rgba(237, 237, 237, 1);
+        border-radius: 22px;
+      }
+
+      .diy-question-input {
+        margin: 10px 0 10px 23px;
+        padding: 0;
+        width: 428px;
+        height: 24px;
+        box-sizing: border-box;
+        border: none;
+        outline: none;
+        font-size: 18px;
+        line-height: 24px;
+        background-color: transparent;
+      }
+
+      .diy-question-answer {
+        margin-top: 19px;
+        text-align: right;
+      }
+
+      .diy-question-answer-checkbox {
+        cursor: pointer;
+      }
+
+      .diy-question-answer-bg {
+        position: relative;
+        display: inline-block;
+        text-align: left;
+        width: 429px;
+        height: 44px;
+        background: rgba(237, 237, 237, 1);
+        border-radius: 22px;
+      }
+
+      .diy-question-answer-bg .icon-chacha {
+        position: absolute;
+        right: 19px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #666;
+        cursor: pointer;
+      }
+
+      .diy-question-answer-text {
+        margin: 10px 0 10px 23px;
+        padding: 0;
+        width: 383px;
+        height: 24px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        color: rgba(42, 42, 42, 1);
+        line-height: 24px;
+        background-color: transparent;
+      }
+
+      .diy-question-function {
+        position: relative;
+        margin-top: 29px;
+        width: 516px;
+        height: 24px;
+      }
+
+      .diy-question-answer-add {
+        display: inline-block;
+        margin-left: 64px;
+        width: 110px;
+        cursor: pointer;
+      }
+
+      .diy-question-function .icon-wentijia {
+        display: inline-block;
+        margin-right: 16px;
+        font-size: 15px;
+        color: #0091ff;
+        transform: translateY(-1px);
+      }
+
+      .diy-question-answer-add-text {
+        font-size: 18px;
+        color: #0091ff;
+      }
+
+      .icon-timushanchu {
+        position: absolute;
+        right: 25px;
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+        color: red;
+        line-height: 18px;
+        cursor: pointer;
+      }
+
+      .diy-question-save {
+        position: absolute;
+        bottom: 34px;
+        left: 250px;
+        width: 110px;
+        text-align: center;
+        line-height: 40px;
+        color: #fff;
+        background-color: #0091ff;
+        height: 40px;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+
+      /* 模型面板 */
+      /* 模型面板 */
+      .diy-model {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        width: 1547px;
+        height: 825px;
+        border-radius: 31px;
+        background-color: rgba(225, 225, 225, 0.9);
+      }
+
+      .diy-model-title {
+        margin: 52px 0 0 68px;
+        width: 128px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 32px;
+        font-weight: 400;
+        color: #000000;
+      }
+      .diy-model-category-box {
+        position: absolute;
+        top: 134px;
+        left: 80px;
+        width: 1386px;
+        height: auto;
+      }
+      .diy-model-category-text {
+        margin-left: 12px;
+        font-size: 18px;
+        color: #b0b0b0;
+      }
+      .diy-model-category-ul {
+        display: inline-flex;
+        flex-wrap: wrap;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1222px;
+      }
+      .diy-model-category-li {
+        margin-right: 41px;
+        margin-bottom: 14px;
+        font-size: 18px;
+        color: #6d7278;
+        cursor: pointer;
+      }
+      .diy-model-category-li-active {
+        color: #0091ff;
+      }
+      .diy-model-main {
+        display: flex;
+        flex-wrap: wrap;
+        position: absolute;
+        top: 245px;
+        left: 80px;
+        overflow-y: scroll;
+        width: 1386px;
+        height: 500px;
+      }
+      .diy-model-main::-webkit-scrollbar {
+        display: none;
+      }
+      .diy-model-box {
+        position: relative;
+        margin-bottom: 41px;
+        margin-right: 45px;
+        width: 193px;
+        height: 136px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .diy-model-box:nth-child(6n) {
+        margin-right: 0;
+      }
+      .diy-model-img {
+        width: 193px;
+        height: 108px;
+        border-radius: 10px;
+      }
+      .diy-model-add {
+        border: 1px solid #979797;
+      }
+      .diy-model-add .icon-tianjia {
+        color: #fff;
+        font-size: 60px;
+      }
+      .diy-model-delete {
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        height: 41px;
+        width: 120px;
+        text-align: center;
+        background-color: #f13d3d;
+        color: white;
+        line-height: 41px;
+        border-radius: 22px;
+        cursor: pointer;
+      }
+      /* 模型调整 */
+      .diy-model-change {
+        display: none;
+        position: fixed;
+        left: 47px;
+        top: 52px;
+        width: 461px;
+        height: 830px;
+        background: #fffdfd;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+        border-radius: 31px;
+      }
+      .diy-model-change-text {
+        margin: 28px 0 0 30px;
+        font-size: 28px;
+        font-weight: 400;
+      }
+      .diy-model-change-dispalybox {
+        margin: 15px auto 0;
+        width: 320px;
+        height: 210px;
+      }
+      .diy-model-change-dispalybox-img {
+        width: 320px;
+        height: 180px;
+      }
+      .diy-model-change-changebox-item {
+        margin: 10px auto 0;
+        width: 375px;
+        height: 75px;
+      }
+      .diy-model-change-changebox-item-title {
+        font-size: 21px;
+        font-weight: 600;
+        color: #2a2a2a;
+      }
+      #diy-model-change-size {
+        width: 375px;
+        cursor: pointer;
+      }
+      #diy-model-change-rotation {
+        width: 375px;
+        cursor: pointer;
+      }
+      #diy-model-change-x {
+        width: 375px;
+        cursor: pointer;
+      }
+      #diy-model-change-y {
+        width: 375px;
+        cursor: pointer;
+      }
+      #diy-model-change-z {
+        width: 375px;
+        cursor: pointer;
+      }
+      .diy-model-change-item-text {
+        display: flex;
+        justify-content: space-between;
+      }
+      .diy-model-change-reset {
+        cursor: pointer;
+      }
+      .diy-model-change-save {
+        position: absolute;
+        bottom: 29px;
+        left: 176px;
+        width: 110px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        font-size: 21px;
+        color: white;
+        background-color: #0091ff;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+      /* 展画内模型编辑界面 */
+      .diy-model-model {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 586px;
+        height: 417px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        z-index: 100;
+      }
+
+      .diy-model-model-title {
+        margin-left: 52px;
+        margin-top: 52px;
+        display: inline-block;
+        height: 28px;
+        width: 120px;
+        font-size: 30px;
+        line-height: 30px;
+      }
+
+      .icon-moxing {
+        font-size: 25px;
+        vertical-align: bottom;
+        color: #009fe8;
+      }
+
+      .diy-model-model-pre {
+        position: relative;
+        float: left;
+        margin-left: 52px;
+        width: 256px;
+        height: 256px;
+        text-align: center;
+        line-height: 256px;
+        background-color: #ccc;
+        border-radius: 8px;
+        z-index: 0;
+      }
+
+      .icon-icon-damoxingwenjian {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 46px;
+      }
+
+      #model-model-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 256px;
+        height: 256px;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .diy-model-model-del-btn {
+        margin-right: 120px;
+        width: 134px;
+        height: 40px;
+        margin-top: 27px;
+        background: #f13d3d;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(218, 35, 35, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-model-model-add-btn {
+        width: 134px;
+        height: 40px;
+
+        background: #009fe8;
+        border-radius: 20px;
+        box-shadow: 0px 3px 8px 0px rgba(0, 159, 232, 0.31);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+      }
+
+      .diy-model-model-edit-btn {
+        float: right;
+      }
+      /* 反射设置 */
+      .diy-material {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 566px;
+        border-radius: 31px;
+        background-color: rgba(225, 225, 225, 0.9);
+      }
+      .diy-material-title {
+        margin-top: 47px;
+        margin-left: 47px;
+        margin-bottom: 23px;
+        height: 45px;
+        font-size: 32px;
+        color: #000000;
+        line-height: 45px;
+      }
+      .diy-material-main {
+        overflow-y: scroll;
+        margin: 0 auto;
+        width: 514px;
+        height: 350px;
+      }
+      .diy-material-main::-webkit-scrollbar {
+        display: none;
+      }
+      .diy-material-box {
+        width: 514px;
+        height: 160px;
+      }
+      .diy-material-box-open {
+        position: relative;
+        width: 514px;
+        height: 43px;
+      }
+      .diy-material-box-title {
+        margin: 0 0 10px 0;
+        height: 33px;
+        font-size: 24px;
+        color: #000000;
+        line-height: 33px;
+      }
+
+      .diy-material-box-switch-on {
+        background: #0091ff;
+      }
+      .diy-material-box-switch-off {
+        background: #b5b5b5;
+      }
+      .diy-material-box-alert {
+        font-size: 14px;
+      }
+      .diy-material-box-change {
+        position: relative;
+        margin-top: 5px;
+        width: 514px;
+        height: 33px;
+      }
+      .diy-material-box-title2 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        color: #000000;
+        line-height: 33px;
+      }
+      .range-level {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        display: inline-block;
+        width: 250px;
+        height: 5px;
+        line-height: 5px;
+      }
+      .range-level-val {
+        position: absolute;
+        bottom: -15px;
+        right: 115px;
+      }
+      .range-visibility {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        display: inline-block;
+        width: 250px;
+        height: 5px;
+        line-height: 5px;
+      }
+      .range-visibility-val {
+        position: absolute;
+        bottom: -15px;
+        right: 115px;
+      }
+      .toggle {
+        position: relative;
+        display: inline-block;
+        pointer-events: auto;
+        margin: -5px;
+        padding: 5px;
+      }
+      .toggle input:checked + .track {
+        border-color: #4aa8ff;
+        background-color: #4aa8ff;
+      }
+      .toggle.dragging .handle {
+        background-color: #f2f2f2 !important;
+      }
+      .toggle input {
+        display: none;
+      }
+      /* the track appearance when the toggle is "off" */
+      .toggle .track {
+        -webkit-transition-timing-function: ease-in-out;
+        transition-timing-function: ease-in-out;
+        -webkit-transition-duration: 0.3s;
+        transition-duration: 0.3s;
+        -webkit-transition-property: background-color, border;
+        transition-property: background-color, border;
+        display: inline-block;
+        box-sizing: border-box;
+        width: 51px;
+        height: 31px;
+        border-radius: 20px;
+        background-color: #fff;
+        content: " ";
+        cursor: pointer;
+        pointer-events: none;
+      }
+
+      .toggle .handle {
+        -webkit-transition: 0.3s cubic-bezier(0, 1.1, 1, 1.1);
+        transition: 0.3s cubic-bezier(0, 1.1, 1, 1.1);
+        -webkit-transition-property: background-color, transform;
+        transition-property: background-color, transform;
+        position: absolute;
+        display: block;
+        width: 27px;
+        height: 27px;
+        border-radius: 27px;
+        background-color: #fff;
+        top: 7px;
+        left: 7px;
+      }
+      .toggle .handle:before {
+        position: absolute;
+        top: -4px;
+        left: -21.5px;
+        padding: 18.5px 34px;
+        content: " ";
+      }
+
+      .toggle input:checked + .track .handle {
+        -webkit-transform: translate3d(20px, 0, 0);
+        transform: translate3d(20px, 0, 0);
+        background-color: #fff;
+      }
+      .togglePosition {
+        position: absolute;
+        right: 13px;
+        top: 10px;
+        height: 20px;
+        width: 33px;
+      }
+      .toggle .track {
+        width: 44px;
+        height: 22px;
+        border-radius: 20px;
+        background-color: #b5b5b5;
+      }
+      .toggle .handle {
+        width: 14px;
+        height: 14px;
+        border-radius: 14px;
+        background-color: #fff;
+        top: 9px;
+        left: 10px;
+      }
+      .diy-material-save {
+        margin: 36px auto 0;
+        width: 109px;
+        height: 41px;
+        text-align: center;
+        background-color: #0091ff;
+        color: white;
+        line-height: 41px;
+        border-radius: 22px;
+        cursor: pointer;
+      }
+      .exchange {
+      display: none;
+      position: fixed;
+      top: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 753px;
+      min-height: 157px;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0px 1px 9px 0px rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+    }
+
+    .exchange-main {
+      margin-top: 38px;
+      margin-left: 50px;
+      width: 681px;
+      font-size: 24px;
+      white-space: normal;
+    }
+
+    .exchange-name {
+      font-size: 24px;
+      color: #0091ff;
+    }
+
+    .exchange-agree {
+      position: absolute;
+      bottom: 22px;
+      right: 189px;
+      width: 117px;
+      height: 37px;
+      font-size: 18px;
+      line-height: 37px;
+
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      background: #0091ff;
+      border-radius: 18px;
+      border: 1px solid #b5b5b5;
+      cursor: pointer;
+    }
+
+    .exchange-refuse {
+      position: absolute;
+      bottom: 22px;
+      right: 49px;
+      width: 117px;
+      height: 37px;
+      font-size: 18px;
+
+      font-weight: 600;
+      line-height: 37px;
+      text-align: center;
+      color: #3a3e47;
+      background: #d8d8d8;
+      border-radius: 18px;
+      border: 1px solid #b5b5b5;
+      cursor: pointer;
+    }
+      .link360 {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      /*登录界面*/
+      .login-box{
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 510px;
+        height: 601px;
+        background: #FFFDFD;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+        border-radius: 49px;
+      }
+      .login-text{
+        display: inline-block;
+        margin: 46px 340px 0px 42px;
+        width: 128px;
+        height: 45px;
+        font-size: 32px;
+        font-family: PingFangSC-Semibold, PingFang SC;
+        font-weight: 600;
+        color: #000000;
+        line-height: 45px;
+      }
+      .login-box .icon{
+        display: inline-block;
+        margin: 7px 0 7px 7px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        border-radius: 30px;
+      }
+      .login-box input{
+        display: inline-block;
+        position: relative;
+        bottom: 30px;
+        width: 300px;
+        height: 30px;
+        margin-left: 15px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+      }
+      .login-account{
+        display: inline-block;
+        overflow: hidden;
+        margin: 32px 42px 0px 42px;
+        width: 426px;
+        height: 73px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .login-password{
+        display: inline-block;
+        overflow: hidden;
+        margin: 24px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .login-btn{
+        display: inline-block;
+        margin: 42px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #0091FF;
+        cursor: pointer;
+      }
+      .wander-btn{
+        display: inline-block;
+        margin: 24px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #B4B3B3;
+        cursor: pointer;
+      }
+      .extra{
+        display: inline-block;
+        height: 22px;
+        margin: 25px 0 0 61px;
+      }
+      .forget-password{
+        width: 64px;
+        height: 22px;
+        margin: 25px 250px 47px 0px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+        cursor: pointer;
+      }
+      .register-btd{
+        width: 64px;
+        height: 22px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+        cursor: pointer;
+      }
+      /*注册页面*/
+      .register-box{
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 510px;
+        height: 923px;
+        background: #FFFDFD;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+        border-radius: 49px;
+      }
+      .register-box .icon-fanhui1{
+        display: block;
+        position: absolute;
+        right: 45px;
+        top: 53px;
+        width: 10px;
+        height: 16px;
+        font-size: 25px;
+        cursor: pointer;
+      }
+      .register-text{
+        display: inline-block;
+        margin: 47px 340px 0px 42px;
+        width: 128px;
+        height: 45px;
+        font-size: 32px;
+        font-family: PingFangSC-Semibold, PingFang SC;
+        font-weight: 600;
+        color: #000000;
+        line-height: 45px;
+      }
+      .register-box .icon{
+        display: inline-block;
+        margin: 7px 0 7px 7px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        border-radius: 30px;
+      }
+      .register-box input{
+        display: inline-block;
+        position: relative;
+        bottom: 30px;
+        width: 300px;
+        height: 30px;
+        margin-left: 15px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        width: 104px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+      }
+      .register-account{
+        display: inline-block;
+        overflow: hidden;
+        margin: 32px 42px 0px 42px;
+        width: 426px;
+        height: 73px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .register-name,
+      .register-password,
+      .register-Captcha,
+      .register-unit,
+      .register-title{
+        display: inline-block;
+        overflow: hidden;
+        margin: 24px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      #register-Captcha{
+        width: 235px;
+      }
+      .register-Captcha-text{
+        position: relative;
+        bottom: 30px;
+        width: 80px;
+        height: 22px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+        cursor: pointer;
+      }
+      .register-gender{
+        display: inline-block;
+        margin: 26px 0 0 0;
+        overflow: hidden;
+        width: 427px;
+        height: 40px;
+      }
+      .register-gender input[type="radio"]{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+      .register-gender .icon--nangaoliang,
+      .register-gender .icon--nan{
+        display: inline-block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        margin-left: 62px;
+        cursor: pointer;
+      }
+      .register-gender .icon--nvgaoliang,
+      .register-gender .icon--nv{
+        display: inline-block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        margin-left: 58px;
+        cursor: pointer;
+      }
+      .register-confirm{
+        display: inline-block;
+        margin: 42px 41px 52px 42px;
+        width: 427px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #0091FF;
+        cursor: pointer;
+      }
+       /*找回密码页面*/
+       .Reregister-box{
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 510px;
+        height: 560px;
+        background: #FFFDFD;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+        border-radius: 49px;
+      }
+      .Reregister-box .icon-fanhui1{
+        display: block;
+        position: absolute;
+        right: 45px;
+        top: 53px;
+        width: 10px;
+        height: 16px;
+        font-size: 25px;
+        cursor: pointer;
+      }
+      .Reregister-text{
+        display: inline-block;
+        margin: 47px 340px 0px 42px;
+        width: 128px;
+        height: 45px;
+        font-size: 32px;
+        font-family: PingFangSC-Semibold, PingFang SC;
+        font-weight: 600;
+        color: #000000;
+        line-height: 45px;
+      }
+      .Reregister-box .icon{
+        display: inline-block;
+        margin: 7px 0 7px 7px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        border-radius: 30px;
+      }
+      .Reregister-box input{
+        display: inline-block;
+        position: relative;
+        bottom: 30px;
+        width: 300px;
+        height: 30px;
+        margin-left: 15px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        width: 104px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+      }
+      .Reregister-account{
+        display: inline-block;
+        overflow: hidden;
+        margin: 32px 42px 0px 42px;
+        width: 426px;
+        height: 73px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .Reregister-Captcha,
+      .Reregister-password{
+        display: inline-block;
+        overflow: hidden;
+        margin: 24px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      #Reregister-Captcha{
+        width: 235px;
+      }
+      .Reregister-Captcha-text{
+        position: relative;
+        bottom: 30px;
+        width: 80px;
+        height: 22px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+        cursor: pointer;
+      }
+      .Reregister-confirm{
+        display: inline-block;
+        margin: 42px 41px 52px 42px;
+        width: 427px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #0091FF;
+        cursor: pointer;
+      }
+      #tepCanvas {
+        display: none;
+        position: absolute;
+        top: 91px;
+        right: 150px;
+        /* border: orangered 1px solid; */
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+      /*对话框*/
+      .oldMessage {
+      display: none;
+      width: 540px;
+      height: 29px;
+      position: absolute;
+      left: 66px;
+      bottom: 131px;
+      list-style-type: none;
+      text-align: left;
+      font-size: 21px;
+      font-family: PingFangSC-Regular, PingFang SC;
+      font-weight: 400;
+      color: #FFFFFF;
+    }
+    .messagePar {
+      display: none;
+    }
+
+    .message {
+      width: 691px;
+      height: 60px;
+      background: #FFFFFF;
+      box-shadow: 0px 1px 9px 0px rgba(0, 0, 0, 0.5);
+      border-radius: 30px;
+      left: 44px;
+      bottom: 47px;
+      position: absolute;
+      display: flex;
+    }
+
+    .message li {
+      list-style-type: none;
+      text-align: center;
+    }
+
+    .begin {
+      width: 15px;
+      height: 28px;
+      background: #FFFFFF;
+      background-image: url("images/exhibits/路径.png");
+      margin-left: 22px;
+      margin-top: 17px;
+      background-position: center;
+      display: inline-block;
+      border: none;
+      outline: 0;
+      cursor: pointer;
+    }
+
+    .content {
+      width: 540px;
+      height: 29px;
+      margin-left: 30px;
+      margin-top: 16px;
+    }
+
+    .content input {
+      width: 100%;
+      height: 100%;
+      font-size: 21px;
+      font-family: PingFangSC-Regular, PingFang SC;
+      font-weight: 400;
+      color: #000000;
+      line-height: 29px;
+      border: 0px;
+      outline: 0px;
+    }
+
+    .send {
+      width: 32px;
+      height: 32px;
+      background: #FFFFFF;
+      background-image: url("images/exhibits/形状.png");
+      margin-left: 33px;
+      margin-top: 15px;
+      background-position: center;
+      display: inline-block;
+      border: none;
+      outline: 0;
+    }
+
+    .send:hover {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* 隐藏界面 */
+    .messageHidePar {
+      display: none;
+    }
+
+    .messageHide {
+      width: 60px;
+      height: 60px;
+      background: #FFFFFF;
+      box-shadow: 0px 1px 9px 0px rgba(0, 0, 0, 0.5);
+      left: 44px;
+      bottom: 47px;
+      position: absolute;
+      display: flex;
+      border-radius: 50%;
+    }
+
+    .mhClose {
+      width: 29px;
+      height: 29px;
+      background: #FFFFFF00;
+      background-image: url("images/exhibits/形状结合.png");
+      margin-left: 15px;
+      margin-top: 15px;
+      background-position: center;
+      display: inline-block;
+      border: none;
+      outline: 0;
+      cursor: pointer;
+    }
+    
+    .information {
+      display: none;
+    }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="cover">
+      <img src="" alt="" id="cover-img" />
+    </div>
+    <div id="bg"></div>
+    <!-- 加载界面 -->
+    <div id="loadingScreen" style="display: none">
+      <div class="demo" id="id-demo">
+        <div class="load">
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+          <p id="id-progress2">loading...0%</p>
+        </div>
+      </div>
+    </div>
+    <canvas id="renderCanvas" style="display: block"></canvas>
+
+    <canvas id="model3d" style="display: none"></canvas>
+    <canvas id="tepCanvas"></canvas>
+
+    <div class="label" id="fpsLabel" style="display: none">FPS</div>
+    <!-- 登录页面 -->
+    <div class="login-box">
+      <svg class="icon-guanbi1">
+        <use xlink:href="#icon-guanbi1" />
+      </svg>
+      <div class="login-text">用户登录</div>
+      <div class="login-account">
+        <svg class="icon icon--shoujiicon">
+            <use xlink:href="#icon--shoujiicon" />
+          </svg>
+        <input type="text" id="account" placeholder="手机号码/邮箱"/>
+      </div>
+      <div class="login-password">
+        <svg class="icon icon--mimaicon">
+            <use xlink:href="#icon--mimaicon" />
+          </svg>
+        <input type="password" id="password" placeholder="密码"/>
+      </div>
+      <div class="login-btn">确定</div>
+      <div class="wander-btn">随便看看</div>
+      <div class="extra">
+        <u class="forget-password">忘记密码</u>
+        <u class="register-btn">我要注册</u>
+      </div>
+    </div>
+    <!-- 注册页面 -->
+    <div class="register-box">
+      <span class="iconfont icon-fanhui1"></span>
+      <div class="register-text">注册用户</div>
+      <div class="register-account">
+        <svg class="icon icon--shoujiicon" aria-hidden="true">
+            <use xlink:href="#icon--shoujiicon" />
+          </svg>
+        <input type="text" id="register-account" placeholder="手机号码/邮箱"/>
+      </div>
+      <div class="register-name">
+        <svg class="icon icon--zhenshixingmingicon" aria-hidden="true">
+            <use xlink:href="#icon--zhenshixingmingicon" />
+          </svg>
+        <input type="text" id="register-name" placeholder="真实姓名"/>
+      </div>
+      <div class="register-password">
+        <svg class="icon icon--mimaicon" aria-hidden="true">
+            <use xlink:href="#icon--mimaicon" />
+          </svg>
+        <input type="password" id="register-password" placeholder="密码" />
+      </div>
+      <div class="register-Captcha">
+        <svg class="icon icon--yanzhengmaicon" aria-hidden="true">
+            <use xlink:href="#icon--yanzhengmaicon" />
+          </svg>
+        <input type="text" id="register-Captcha" placeholder="验证码" />
+        <u class="register-Captcha-text">发送验证码</u>
+      </div>
+      <div class="register-unit">
+        <svg class="icon icon--danweiicon" aria-hidden="true">
+            <use xlink:href="#icon--danweiicon" />
+          </svg>
+        <input type="text" id="register-unit" placeholder="单位名称" />
+      </div>
+      <div class="register-title">
+        <svg class="icon icon--zhiweiicon" aria-hidden="true">
+            <use xlink:href="#icon--zhiweiicon" />
+          </svg>
+        <input type="text" id="register-title" placeholder="职位名称" />
+      </div>
+      <div class="register-gender">
+        <label>
+          <input type="radio" name="gender" id="male" value="m">
+          <svg class="icon--nangaoliang" aria-hidden="true">
+            <use xlink:href="#icon--nangaoliang"/>
+            </svg>
+          <svg class="icon--nan" aria-hidden="true">
+            <use xlink:href="#icon--nan"/>
+            </svg>
+        </label>
+        
+        <label>
+          <input type="radio" name="gender" id="female" value="f">
+          <svg class="icon--nvgaoliang" aria-hidden="true">
+            <use xlink:href="#icon--nvgaoliang"/>
+            </svg>
+          <svg class="icon--nv" aria-hidden="true">
+            <use xlink:href="#icon--nv"/>
+            </svg>
+        </label>
+      </div>
+      <div class="register-confirm">确定</div>
+    </div>
+    <!-- 忘记密码页面 -->
+    <div class="Reregister-box">
+      <span class="iconfont icon-fanhui1"></span>
+      <div class="Reregister-text">找回密码</div>
+      <div class="Reregister-account">
+        <svg class="icon icon--shoujiicon" aria-hidden="true">
+            <use xlink:href="#icon--shoujiicon" />
+          </svg>
+        <input type="text" id="Reregister-account" placeholder="手机号码/邮箱"/>
+      </div>
+      <div class="Reregister-Captcha">
+        <svg class="icon icon--yanzhengmaicon" aria-hidden="true">
+            <use xlink:href="#icon--yanzhengmaicon" />
+          </svg>
+        <input type="text" id="Reregister-Captcha" placeholder="验证码" />
+        <u class="Reregister-Captcha-text">发送验证码</u>
+      </div>
+      <div class="Reregister-password">
+        <svg class="icon icon--mimaicon" aria-hidden="true">
+            <use xlink:href="#icon--mimaicon" />
+          </svg>
+        <input type="password" id="Reregister-password" placeholder="密码" />
+      </div>
+      <div class="Reregister-confirm">确定</div>
+    </div>
+    <!-- 个人信息填写 -->
+    <div class="profile">
+      <span class="profile-title" data-i18n="profile-title"
+        >首次登录请完善信息</span
+      >
+      <form action="">
+        <div>
+          <span data-i18n="name"></span>
+          <input type="text" autofocus />
+        </div>
+        <div>
+          <span data-i18n="sex"></span>
+          <div class="profile-sex">
+            <label>
+              <input type="radio" name="sex" value="m" />
+              <span data-i18n="male">男</span></label>
+            <label>
+              <input type="radio" name="sex" value="f" />
+              <span data-i18n="female">女</span></label>
+          </div>
+        </div>
+        <div>
+          <span data-i18n="phone"></span>
+          <input
+            type="text"
+            class="profile-phone"
+            onkeyup="value=value.replace(/[^\d\-\d]/g,'')"
+          />
+        </div>
+        <div>
+          <span data-i18n="email"></span>
+          <input class="profile-email" type="text" />
+        </div>
+        <div>
+          <span data-i18n="company"></span>
+          <input type="text" />
+        </div>
+        <div>
+          <span data-i18n="position"></span>
+          <input type="text" />
+        </div>
+      </form>
+      <div id="profile-submit" data-i18n="submit">生成个人信息</div>
+    </div>
+    <!-- 右侧界面按钮 -->
+    <div class="ui-btn">
+      <div class="menu" id="menu">
+        <span class="iconfont icon-arrow-up"></span
+        ><img src="./icon/logo.png" alt="" />
+      </div>
+      <ul class="menu-list">
+        <li class="menu-li profile-btn">
+          <span class="iconfont icon-bussiness-man"></span>
+        </li>
+        <li class="menu-li map-btn">
+          <span class="iconfont icon-daohang"></span>
+        </li>
+        <li class="menu-li translate-btn">
+          <span class="iconfont"></span>
+        </li>
+        <li class="menu-li share-btn">
+          <span class="iconfont icon-share"></span>
+        </li>
+        <li class="menu-li sound-Mute-btn" id="sound-Mute-btn">
+          <span class="iconfont icon-sound-filling"></span>
+        </li>
+      </ul>
+    </div>
+    <!-- 底部按钮 -->
+    <div class="bottom-btn" id="bottom-btn">
+      <div class="initPostion-btn">
+        <span class="iconfont icon-map"></span>
+      </div>
+      <div class="caizhitihuan-btn">
+        <span class="iconfont icon-caizhitihuan"></span>
+      </div>
+      <div class="commentary-btn">
+        <span class="iconfont icon-jieshuoci"></span>
+      </div>
+      <div class="bgm-btn"><span class="iconfont icon-beijingyin"></span></div>
+      <div class="common-btn"><span class="iconfont icon-tongyong"></span></div>
+      <div class="setup-btn"><span class="iconfont icon-bianji"></span></div>
+      <div class="signboard-btn">
+        <span class="iconfont icon-signboard"></span>
+      </div>
+      <div class="shubiao-btn"><span class="iconfont icon-shubiao"></span></div>
+      <div class="operating-instructions-box">
+        <img
+          class="operating-instructions"
+          src="./icon/OperatingInstructions.png"
+          alt=""
+        />
+        <span class="close"></span>
+      </div>
+    </div>
+    <!-- 个人信息 -->
+    <div class="profile-box">
+      <span class="close"></span>
+      <div class="profile-box-content">
+        <div class="profile-box-namebox">
+          <span class="profile-box-name">万维镜像</span>
+          <span class="iconfont profile-box-sex icon-nan"></span>
+          <div class="profile-box-edit">
+            <span class="iconfont icon-xiugai"></span>
+            <span class="profile-box-edit-text" data-i18n="edit">修改资料</span>
+          </div>
+        </div>
+        <div class="profile-box-detail">
+          <p class="profile-box-email">
+            <span class="iconfont icon-youxiang"></span>
+            <span class="profile-box-detail-text profile-box-email-text"
+              >market01@veryengine.com</span>
+          </p>
+          <p class="profile-box-company">
+            <span class="iconfont icon-gongsi"></span>
+            <span class="profile-box-detail-text profile-box-company-text"
+              >杭州万维镜像科技有限公司</span>
+          </p>
+          <p class="profile-box-position">
+            <span class="iconfont icon-zhiwei"></span>
+            <span class="profile-box-detail-text profile-box-position-text"
+              >销售经理</span>
+          </p>
+          <p class="profile-box-phone">
+            <span class="iconfont icon-shouji"></span>
+            <span class="profile-box-detail-text profile-box-phone-text"
+              >0571-86691087</span>
+          </p>
+        </div>
+      </div>
+      <div class="cardcase-btn">
+        <svg class="icon icon-mingpian" aria-hidden="true">
+          <use xlink:href="#icon-mingpian"></use>
+        </svg>
+        <span data-i18n="cardcase">通讯录</span>
+      </div>
+      <div class="logout">
+        <span class="iconfont icon-tuichu"></span>
+        <span data-i18n="signout">退出登录</span>
+      </div>
+    </div>
+    <!-- 个人名片 -->
+  <div class="resume-box">
+    <span class="close"></span>
+    <div class="resume-box-content">
+      <div class="resume-box-namebox">
+        <span class="resume-box-name">万维镜像</span>
+        <span class="iconfont resume-box-sex icon-nan"></span>
+      </div>
+      <div class="resume-box-detail">
+        <p class="resume-box-email">
+          <span class="iconfont icon-youxiang"></span>
+          <span class="resume-box-detail-text resume-box-email-text">market01@veryengine.com</span>
+        </p>
+        <p class="resume-box-company">
+          <span class="iconfont icon-gongsi"></span>
+          <span class="resume-box-detail-text resume-box-company-text">杭州万维镜像科技有限公司</span>
+        </p>
+        <p class="resume-box-position">
+          <span class="iconfont icon-zhiwei"></span>
+          <span class="resume-box-detail-text resume-box-position-text">销售经理</span>
+        </p>
+        <p class="resume-box-phone">
+          <span class="iconfont icon-shouji"></span>
+          <span class="resume-box-detail-text resume-box-phone-text">0571-86691087</span>
+        </p>
+      </div>
+    </div>
+  </div>
+    <!-- 通讯录 -->
+    <div class="cardcase-box">
+      <span class="close"></span>
+      <div class="cardcase-box-header">
+        <div class="cardcase-box-title">
+          <svg class="icon icon-mingpian" aria-hidden="true">
+            <use xlink:href="#icon-mingpian"></use>
+          </svg>
+          <span data-i18n="cardcase" class="cardcase-text">通讯录</span>
+        </div>
+        <div class="cardcase-box-export">
+          <span data-i18n="cardcase-export" class="cardcase-export"
+            >一键导出</span
+          >
+        </div>
+        <ul id="cardcase-box-main"></ul>
+      </div>
+    </div>
+    <!-- 个人信息修改 -->
+    <div class="profile-edit">
+      <span class="profile-edit-title" data-i18n="profile-edit-title"
+        >修改信息</span
+      >
+      <form action="">
+        <div>
+          <span data-i18n="name"></span>
+          <input type="text" autofocus />
+        </div>
+        <div>
+          <span data-i18n="sex"></span>
+          <div class="profile-sex">
+            <label
+              ><input type="radio" name="sex" value="m" />
+              <span data-i18n="male">男</span></label
+            >
+            <label
+              ><input type="radio" name="sex" value="f" />
+              <span data-i18n="female">女</span></label
+            >
+          </div>
+        </div>
+        <div>
+          <span data-i18n="phone"></span>
+          <input
+            type="text"
+            class="profile-phone"
+            onkeyup="value=value.replace(/[^\d\-\d]/g,'')"
+          />
+        </div>
+        <div>
+          <span data-i18n="email"></span>
+          <input class="profile-email" type="text" />
+        </div>
+        <div>
+          <span data-i18n="company"></span>
+          <input type="text" />
+        </div>
+        <div>
+          <span data-i18n="position"></span>
+          <input type="text" />
+        </div>
+      </form>
+      <div id="profile-edit-submit" data-i18n="edit-submit">保存</div>
+    </div>
+    <!-- 分享界面 -->
+    <div class="share-box">
+      <span class="close"></span>
+      <div id="share-title" data-i18n="share">发送邀请链接</div>
+      <p id="share-title-description" data-i18n="share-des">
+        将链接或者二维码分享给朋友
+      </p>
+      <div class="share-link-box">
+        <div id="share-link">
+          <span class="iconfont icon-link"></span>
+          <input
+            type="text"
+            readonly
+            value="http://webvr.cool360.com/baolong/index.html"
+            id="share-link-text"
+          />
+        </div>
+        <div class="share-link-copy" data-i18n="copy">复制链接</div>
+      </div>
+      <div id="qr-code-box">
+        <canvas id="qrcode"></canvas>
+      </div>
+      <a
+        id="save-qr-btn"
+        href="./images/qr.png"
+        download="二维码.png"
+        data-i18n="edit-submit"
+        >保存</a
+      >
+    </div>
+    <!-- 公告栏 -->
+    <div class="board-box">
+      <p class="board-title" data-i18n="board-title">数据公告</p>
+      <span class="close"></span>
+      <div class="board-main">
+        <div class="views-total">
+          <p class="iconfont icon-tongji"></p>
+          <span data-i18n="views-total">总浏览量</span>
+          <p class="num"></p>
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+        </div>
+        <div class="online-total">
+          <p class="iconfont icon-renshu"></p>
+          <span data-i18n="online-total">同时在线人数</span>
+          <p class="num"></p>
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+        </div>
+        <div class="views-today">
+          <p class="iconfont icon-tongji1"></p>
+          <span data-i18n="views-today">今日浏览量</span>
+          <p class="num"></p>
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+        </div>
+        <div class="avg-time">
+          <p class="iconfont icon-shijian"></p>
+          <span>平均在线时长</span>
+          <p class="num"></p>
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 在线人数 -->
+    <div class="online-number">
+      <svg class="icon icon-yonghu" aria-hidden="true">
+        <use xlink:href="#icon-yonghu"></use>
+      </svg>
+      <span class="online-number-text">当前在线：189人</span>
+    </div>
+    <!-- 在线列表 -->
+    <div class="online-chat">
+      <div class="online-num">
+        <svg class="icon icon-yonghu" aria-hidden="true">
+          <use xlink:href="#icon-yonghu"></use>
+        </svg>
+        <span class="online-num-text">当前在线：189人</span>
+      </div>
+      <ul class="online-chat-list" id="online-chat-list">
+        <li class="online-chat-entry">
+          <div class="online-chat-profile">
+            <span class="online-chat-name">张三</span>
+            <span class="online-chat-company">杭州万维镜像科技有限公司</span>
+          </div>
+          <div class="online-chat-function">
+            <svg class="icon icon-dazhaohu" aria-hidden="true">
+              <use xlink:href="#icon-dazhaohu"></use>
+            </svg>
+            <span>打招呼</span>
+            <svg class="icon icon-mingpian1" aria-hidden="true">
+              <use xlink:href="#icon-mingpian1"></use>
+            </svg>
+            <span>换名片</span>
+            <svg class="icon icon-xiaoxi" aria-hidden="true">
+              <use xlink:href="#icon-xiaoxi"></use>
+            </svg>
+            <span>发消息</span>
+          </div>
+
+          <div class="online-chat-btn"></div>
+        </li>
+
+        <li class="online-chat-entry">
+          <div class="online-chat-profile">
+            <span class="online-chat-name">张三</span>
+            <span class="online-chat-company">杭州万维镜像科技有限公司</span>
+          </div>
+          <div class="online-chat-function">
+            <svg class="icon icon-dazhaohu" aria-hidden="true">
+              <use xlink:href="#icon-dazhaohu"></use>
+            </svg>
+            <span>打招呼</span>
+            <svg class="icon icon-mingpian1" aria-hidden="true">
+              <use xlink:href="#icon-mingpian1"></use>
+            </svg>
+            <span>换名片</span>
+            <svg class="icon icon-xiaoxi" aria-hidden="true">
+              <use xlink:href="#icon-xiaoxi"></use>
+            </svg>
+            <span>发消息</span>
+          </div>
+
+          <div class="online-chat-btn"></div>
+        </li>
+      </ul>
+    </div>
+    <!-- 上传提示 -->
+    <div class="upload-alert">
+      <div class="sk-fading-circle">
+        <div class="sk-circle1 sk-circle"></div>
+        <div class="sk-circle2 sk-circle"></div>
+        <div class="sk-circle3 sk-circle"></div>
+        <div class="sk-circle4 sk-circle"></div>
+        <div class="sk-circle5 sk-circle"></div>
+        <div class="sk-circle6 sk-circle"></div>
+        <div class="sk-circle7 sk-circle"></div>
+        <div class="sk-circle8 sk-circle"></div>
+        <div class="sk-circle9 sk-circle"></div>
+        <div class="sk-circle10 sk-circle"></div>
+        <div class="sk-circle11 sk-circle"></div>
+        <div class="sk-circle12 sk-circle"></div>
+      </div>
+      <span>保存中...</span>
+      <span class="progressNum">0%</span>
+    </div>
+    <div class="upload-success">
+      <svg class="icon icon-chenggong" aria-hidden="true">
+        <use xlink:href="#icon-chenggong"></use>
+      </svg>
+      <span class="upload-success-text">保存成功</span>
+    </div>
+    <div class="system-success">
+      <svg class="icon icon-chenggong" aria-hidden="true">
+        <use xlink:href="#icon-chenggong"></use>
+      </svg>
+      <span class="system-success-text"></span>
+    </div>
+    <!-- 背景音编辑 -->
+    <div class="diy-bgm">
+      <span class="close"></span>
+      <p class="diy-bgm-title">编辑背景音乐</p>
+      <div class="diy-bgm-main">
+        <diy class="diy-bgm-lobby" room="0">
+          <span class="diy-bgm-room">大厅</span>
+          <div class="diy-bgm-music-bg">
+            <span class="iconfont icon-yinlejia"></span>
+            <span class="diy-bgm-music-name"></span>
+          </div>
+          <input
+            type="file"
+            accept="mp3"
+            id="diy-bgm-file0"
+            class="diy-bgm-file"
+          />
+          <span class="diy-bgm-delete-music">
+            <span class="iconfont icon-chacha"></span>
+          </span>
+        </diy>
+      </div>
+      <div class="diy-bgm-save">保存</div>
+    </div>
+    <!-- 解说词编辑 -->
+    <div class="diy-des">
+      <span class="close"></span>
+      <p class="diy-des-title">编辑解说词</p>
+      <div class="diy-des-main">
+        <diy class="diy-des-lobby" room="0">
+          <span class="diy-des-room">大厅</span>
+          <div class="diy-des-music-bg">
+            <span class="iconfont icon-yinlejia"></span>
+            <span class="diy-des-music-name"></span>
+          </div>
+          <input
+            type="file"
+            accept="mp3"
+            id="diy-des-file0"
+            class="diy-des-file"
+          />
+          <span class="diy-des-delete-music">
+            <span class="iconfont icon-chacha"></span>
+          </span>
+        </diy>
+      </div>
+      <div class="diy-des-save">保存</div>
+    </div>
+    <!-- 通用编辑 -->
+    <div class="diy-common">
+      <span class="close"></span>
+      <p class="diy-common-title">编辑标题文字样式</p>
+      <div class="diy-hua-title">
+        <select name="" id="diy-hua-title-fontfamily" class="select">
+          <option value="微软雅黑" selected>微软雅黑</option>
+          <option value="方正正粗黑简体">方正正粗黑简体</option>
+          <option value="方正粗倩简体">方正正中黑简体</option>
+          <option value="方正粗黑宋简体">方正正中黑简体</option>
+          <option value="思源黑体">思源黑体</option>
+          <option value="宋体">宋体</option>
+          <option value="黑体">黑体</option>
+          <option value="楷体">楷体</option>
+          <option value="隶书">隶书</option>
+        </select>
+        <select name="" id="diy-hua-title-fontsize" class="select">
+          <option value="18" selected>18</option>
+          <option value="20">20</option>
+          <option value="22">22</option>
+          <option value="24">24</option>
+          <option value="26">26</option>
+          <option value="28">28</option>
+          <option value="30">30</option>
+          <option value="32">32</option>
+          <option value="34">34</option>
+          <option value="36">36</option>
+        </select>
+        <div name="" id="diy-hua-title-color" class="select">A</div>
+        <div id="diy-hua-title-color-picker" class=""></div>
+        <div class="font-example">数字博物馆</div>
+      </div>
+      <!-- 封面编辑 -->
+      <div class="diy-cover-main">
+        <p class="diy-common-title">编辑封面图片</p>
+        <div class="diy-cover-pre">
+          <svg class="icon icon-tupian" aria-hidden="true">
+            <use xlink:href="#icon-tupian"></use>
+          </svg>
+          <img src="" id="diy-cover-prev-view" />
+          <input type="file" accept=".png" id="diy-cover-file" />
+        </div>
+        <!-- <div class="diy-cover-edit-btn">
+          <div class="diy-cover-add-btn">添加</div>
+        </div> -->
+      </div>
+      <!-- 360外景编辑 -->
+      <div class="diy-waijing-main">
+        <p class="diy-common-title">编辑馆外全景</p>
+        <div class="diy-waijing-pre">
+          <svg class="icon icon-tupian" aria-hidden="true">
+            <use xlink:href="#icon-tupian"></use>
+          </svg>
+          <img src="" id="diy-waijing-prev-view" />
+          <input type="file" accept=".jpg" id="diy-waijing-file" />
+        </div>
+        <!-- <div class="diy-waijing-edit-btn">
+          <div class="diy-waijing-add-btn">添加</div>
+        </div> -->
+      </div>
+      <!-- 网页图标编辑 -->
+      <div class="diy-favicon-main">
+        <p class="diy-common-title">编辑网页图标</p>
+        <div class="diy-favicon-pre">
+          <svg class="icon icon-tupian" aria-hidden="true">
+            <use xlink:href="#icon-tupian"></use>
+          </svg>
+          <input type="file" accept=".jpg" id="diy-favicon-file" />
+        </div>
+        <!-- <div class="diy-favicon-edit-btn">
+          <div class="diy-favicon-add-btn">添加</div>
+        </div> -->
+      </div>
+      <div class="diy-common-save">保存</div>
+    </div>
+    <!-- 大标题 -->
+    <div class="diy-big">
+      <span class="close"></span>
+      <p class="diy-big-title">编辑展馆标题</p>
+      <!-- 输入标题 -->
+      <div class="diy-guan-input-bg">
+        <input
+          type="text"
+          name=""
+          placeholder="请输入标题"
+          id="diy-guan-input"
+        />
+      </div>
+      <p class="diy-big-title">编辑标题文字样式</p>
+      <div class="diy-guan-title">
+        <select name="" id="diy-guan-title-fontfamily" class="select">
+          <option value="微软雅黑" selected>微软雅黑</option>
+          <option value="方正正粗黑简体">方正正粗黑简体</option>
+          <option value="方正粗倩简体">方正正中黑简体</option>
+          <option value="方正粗黑宋简体">方正正中黑简体</option>
+          <option value="思源黑体">思源黑体</option>
+          <option value="宋体">宋体</option>
+          <option value="黑体">黑体</option>
+          <option value="楷体">楷体</option>
+          <option value="隶书">隶书</option>
+        </select>
+        <select name="" id="diy-guan-title-fontsize" class="select">
+          <option value="30" selected>26</option>
+          <option value="36">36</option>
+          <option value="40">40</option>
+          <option value="44">44</option>
+          <option value="48">48</option>
+          <option value="52">52</option>
+          <option value="56">56</option>
+          <option value="60">60</option>
+        </select>
+        <div name="" id="diy-guan-title-color" class="select">A</div>
+        <div id="diy-guan-title-color-picker"></div>
+        <div class="guan-font-example">数字博物馆</div>
+        <div class="diy-guan-save">保存</div>
+      </div>
+    </div>
+    <!-- 图片编辑 -->
+    <div class="diy-pic">
+      <span class="close"></span>
+      <div>
+        <span class="diy-pic-title">展画编辑</span>
+        <span class="iconfont icon-fuzhi"></span>
+      </div>
+      <div class="diy-pic-language">
+        <span class="diy-pic-chinese btn-selected">中文</span
+        ><span class="diy-pic-english">EN</span>
+      </div>
+      <div class="diy-pic-mian">
+        <div class="diy-pic-pre">
+          <svg class="icon icon-tupian" aria-hidden="true">
+            <use xlink:href="#icon-tupian"></use>
+          </svg>
+          <img src="" alt="" width="200" height="200" id="img-prev-view" />
+          <input type="file" id="diy-pic-file" accept=".jpg" />
+        </div>
+        <div class="diy-pic-des-box">
+          <div class="diy-pic-des">
+            <div>
+              <p class="diy-pic-des-title">标题</p>
+              <input
+                type="text"
+                name=""
+                id="diy-pic-title-input"
+                placeholder=" 此处输入标题"
+              />
+            </div>
+            <div>
+              <p class="diy-pic-des-title">内容</p>
+              <textarea
+                name=""
+                id="diy-pic-des-input"
+                placeholder="此处输入内容"
+              ></textarea>
+            </div>
+          </div>
+          <div class="diy-pic-des-en">
+            <div>
+              <p class="diy-pic-des-en-title">Title</p>
+              <input
+                type="text"
+                name=""
+                id="diy-pic-en-title-input"
+                placeholder=" 此处输入标题"
+              />
+            </div>
+            <div>
+              <p class="diy-pic-des-en-title">Content</p>
+              <textarea
+                name=""
+                id="diy-pic-des-en-input"
+                placeholder="此处输入内容"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="diy-pic-resource">
+        <p class="diy-pic-resource-title">编辑链接</p>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-lianjie-DIY"></span>
+        </div>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-shipin-DIY"></span>
+        </div>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-3D-DIY"></span>
+        </div>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-360-DIY"></span>
+        </div>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-tuji-DIY"></span>
+        </div>
+        <div class="diy-pic-resource-icon">
+          <span class="iconfont icon-pdf-DIY"></span>
+        </div>
+      </div>
+      <div class="switch-pic-show-direction-box">
+        <span>将展画显示在左</span>
+        <input class="switch-pic-show-direction" type="checkbox" />
+        <span>右</span>
+      </div>
+      <div class="diy-pic-save diy-pic-btn">保存</div>
+      <div class="diy-pic-cancel diy-pic-btn">取消</div>
+    </div>
+    <!-- 展画内链接编辑 -->
+    <div class="diy-pic-link">
+      <span class="close2"></span>
+      <div>
+        <span class="diy-pic-link-title">链接编辑</span>
+        <span class="iconfont icon-lianjie"></span>
+      </div>
+      <div class="diy-pic-link-div">
+        <input
+          type="text"
+          class="diy-pic-link-input"
+          autofocus
+          placeholder="请输入网址"
+        />
+      </div>
+      <div class="diy-pic-link-cancel diy-pic-link-btn">删除</div>
+      <div class="diy-pic-link-save diy-pic-link-btn">添加</div>
+    </div>
+    <!-- 展画内视频编辑 -->
+    <div class="diy-videos">
+      <span class="close2"></span>
+      <div class="diy-pic-videos-title-box">
+        <span class="diy-pic-videos-title">视频集编辑</span>
+        <span class="iconfont icon-shipin"></span>
+      </div>
+      <div class="diy-videos-main">
+        <div class="diy-videos-box">
+          <span class="iconfont icon-tianjia1"></span>
+        </div>
+      </div>
+      <div class="diy-videos-btn-box">
+        <!-- <div class="diy-videos-btn-cancel">取消</div> -->
+        <div class="diy-videos-btn-save">保存</div>
+      </div>
+    </div>
+    <div class="diy-pic-video">
+      <span class="close2"></span>
+      <span class="diy-pic-video-title">视频编辑</span>
+      <span class="iconfont icon-shipin"></span>
+      <div>
+        <div class="diy-pic-video-main">
+          <div class="diy-pic-video-pre">
+            <svg class="icon icon-yunpanlogo-" aria-hidden="true">
+              <use xlink:href="#icon-yunpanlogo-"></use>
+            </svg>
+            <video
+              src=""
+              id="pic-video-prev-view"
+              autoplay="autoplay"
+              muted
+            ></video>
+            <input type="file" accept=".mp4" id="pic-video-file" />
+          </div>
+          <div class="diy-pic-video-edit-btn">
+            <div class="diy-pic-video-add-btn">添加</div>
+            <div class="diy-pic-video-del-btn">删除</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 展画内模型集编辑 -->
+    <div class="diy-models">
+      <span class="close2"></span>
+      <div class="diy-pic-models-title-box">
+        <span class="diy-pic-models-title">模型集编辑</span>
+        <span class="iconfont icon-shipin"></span>
+      </div>
+      <div class="diy-models-main">
+        <div class="diy-models-box">
+          <span class="iconfont icon-tianjia1"></span>
+        </div>
+      </div>
+      <div class="diy-models-btn-box">
+        <!-- <div class="diy-models-btn-cancel">取消</div> -->
+        <div class="diy-models-btn-save">保存</div>
+      </div>
+    </div>
+    <!-- 展画内模型编辑 -->
+    <div class="diy-pic-model">
+      <span class="close2"></span>
+      <span class="diy-pic-model-title">模型编辑</span>
+      <span class="iconfont icon-moxing"></span>
+      <div>
+        <div class="diy-pic-model-main">
+          <div class="diy-pic-model-pre">
+            <svg class="icon icon-icon-damoxingwenjian" aria-hidden="true">
+              <use xlink:href="#icon-icon-damoxingwenjian"></use>
+            </svg>
+            <img src="" alt="" id="pic-model-prev-view" />
+            <input type="file" webkitdirectory multiple id="pic-model-file" />
+          </div>
+          <div class="diy-pic-model-edit-btn">
+            <div class="diy-pic-model-add-btn">添加</div>
+            <div class="diy-pic-model-del-btn">删除</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 展画内360链接编辑 -->
+    <div class="diy-pic-360-link">
+      <span class="close2"></span>
+      <div>
+        <span class="diy-pic-360-title">全景编辑</span>
+        <span class="iconfont icon-quanjing"></span>
+      </div>
+      <div class="diy-pic-360-link-div">
+        <input
+          type="text"
+          class="diy-pic-360-link-input"
+          autofocus
+          placeholder="请输入网址"
+        />
+      </div>
+      <div class="diy-pic-360-link-cancel diy-pic-360-link-btn">删除</div>
+      <div class="diy-pic-360-link-save diy-pic-360-link-btn">添加</div>
+    </div>
+    <!-- 展画内图集编辑 -->
+    <div class="diy-album">
+      <span class="close2"></span>
+      <div class="diy-pic-album-title-box">
+        <span class="diy-pic-album-title">图集编辑</span>
+        <span class="iconfont icon-xiangce"></span>
+      </div>
+      <div class="diy-album-main">
+        <div class="diy-album-box">
+          <span class="iconfont icon-tianjia"></span>
+        </div>
+      </div>
+      <div class="diy-album-btn-box">
+        <!-- <div class="diy-album-btn-cancel">取消</div> -->
+        <div class="diy-album-btn-save">保存</div>
+      </div>
+    </div>
+    <!-- 图集添加界面 -->
+    <div class="diy-album-add-box">
+      <div class="diy-album-add-pre">
+        <span class="iconfont icon-tianjia"></span>
+        <img src="" alt="" id="album-prev-view" />
+        <input type="file" accept=".jpg" id="album-pic-file" />
+      </div>
+      <div class="diy-album-add-language">
+        <span class="diy-album-add-chinese btn-selected">中文</span
+        ><span class="diy-album-add-english">EN</span>
+      </div>
+      <div class="diy-album-add-box-main">
+        <div class="diy-album-add-box-des">
+          <div class="diy-album-cn-box">
+            <div>
+              <p class="diy-album-add-box-des-title">标题</p>
+              <input
+                type="text"
+                name=""
+                id="diy-album-add-box-title-input"
+                placeholder=" 此处输入标题"
+              />
+            </div>
+            <div>
+              <p class="diy-album-add-box-des-title">内容</p>
+              <textarea
+                name=""
+                id="diy-album-add-box-des-input"
+                placeholder=" 此处输入内容"
+              ></textarea>
+            </div>
+          </div>
+          <div class="diy-album-en-box">
+            <div>
+              <p class="diy-album-add-box-en-des-title">Title</p>
+              <input
+                type="text"
+                name=""
+                id="diy-album-add-box-en-title-input"
+                placeholder=" 此处输入标题"
+              />
+            </div>
+            <div>
+              <p class="diy-album-add-box-en-des-title">Content</p>
+              <textarea
+                name=""
+                id="diy-album-add-box-en-des-input"
+                placeholder=" 此处输入内容"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="diy-album-add-btn-box">
+          <div class="diy-album-add-cancel">取消</div>
+          <div class="diy-album-add-save">保存</div>
+        </div>
+      </div>
+    </div>
+    <!-- 展画内pdf编辑 -->
+    <div class="diy-pic-pdf">
+      <span class="close2"></span>
+      <span class="diy-pic-pdf-title">PDF编辑</span>
+      <span class="iconfont icon-pdf2"></span>
+      <div>
+        <div class="diy-pic-pdf-main">
+          <div class="diy-pic-pdf-pre">
+            <svg class="icon icon-pdf" aria-hidden="true">
+              <use xlink:href="#icon-pdf"></use>
+            </svg>
+            <input type="file" id="pic-pdf-file" />
+          </div>
+          <div class="diy-pic-pdf-edit-btn">
+            <div class="diy-pic-pdf-add-btn">添加</div>
+            <div class="diy-pic-pdf-del-btn">删除</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 视频编辑 -->
+    <div class="diy-video">
+      <span class="close"></span>
+      <span class="diy-video-title">视频编辑</span>
+      <span class="iconfont icon-shipin"></span>
+      <div>
+        <div class="diy-video-main">
+          <div class="diy-video-pre">
+            <svg class="icon icon-yunpanlogo-" aria-hidden="true">
+              <use xlink:href="#icon-yunpanlogo-"></use>
+            </svg>
+            <video
+              src=""
+              id="diy-video-prev-view"
+              autoplay="autoplay"
+              muted
+            ></video>
+            <input type="file" accept=".mp4" id="diy-video-file" />
+          </div>
+          <div class="diy-video-edit-btn">
+            <div class="diy-video-add-btn">添加</div>
+            <div class="diy-video-del-btn">删除</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 贴图编辑 -->
+    <div class="diy-tietu">
+      <span class="close"></span>
+      <span class="diy-tietu-title">贴图编辑</span>
+      <span class="iconfont icon-fuzhi"></span>
+      <div>
+        <div class="diy-tietu-main">
+          <div class="diy-tietu-pre">
+            <svg class="icon icon-tupian" aria-hidden="true">
+              <use xlink:href="#icon-tupian"></use>
+            </svg>
+            <img width="200" height="200" src="" id="diy-tietu-prev-view" />
+            <input type="file" accept=".jpg" id="diy-tietu-file" />
+          </div>
+          <div class="diy-tietu-edit-btn">
+            <div class="diy-tietu-add-btn">添加</div>
+            <div class="diy-tietu-del-btn">删除</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 问题编辑 -->
+    <div class="diy-question">
+      <span class="close"></span>
+      <p class="diy-question-title">编辑答题闯关</p>
+      <div class="diy-question-main">
+        <div class="diy-question-box">
+          <div class="diy-question-q">
+            <span class="diy-question-no">01</span>
+            <div class="diy-question-input-bg">
+              <input
+                type="text"
+                class="diy-question-input"
+                autofocus
+                placeholder="请输入问题"
+              />
+            </div>
+          </div>
+          <div class="diy-question-answers">
+            <div class="diy-question-answer">
+              <input
+                type="checkbox"
+                name=""
+                id=""
+                class="diy-question-answer-checkbox"
+              />
+              <div class="diy-question-answer-bg">
+                <input
+                  type="text"
+                  class="diy-question-answer-text"
+                  autofocus
+                  placeholder="请输入选项，并在正确选项前勾选"
+                />
+                <span class="iconfont icon-chacha"></span>
+              </div>
+            </div>
+            <div class="diy-question-answer">
+              <input type="checkbox" name="" id="" />
+              <div class="diy-question-answer-bg">
+                <input
+                  type="text"
+                  class="diy-question-answer-text"
+                  autofocus
+                  placeholder="请输入选项，并在正确选项前勾选"
+                />
+                <span class="iconfont icon-chacha"></span>
+              </div>
+            </div>
+          </div>
+          <div class="diy-question-function">
+            <div class="diy-question-answer-add">
+              <span class="iconfont icon-wentijia"></span>
+              <span class="diy-question-answer-add-text">添加选项</span>
+            </div>
+            <span class="iconfont icon-timushanchu"></span>
+          </div>
+        </div>
+      </div>
+      <div class="diy-question-save">保存</div>
+    </div>
+    <!-- 模型放置面板 -->
+    <div class="diy-model">
+      <span class="close"></span>
+      <p class="diy-model-title">选择模型</p>
+      <div class="diy-model-category-box">
+        <span class="diy-model-category-text">类别：</span>
+        <div class="diy-model-category-ul"></div>
+      </div>
+      <div class="diy-model-main"></div>
+      <div class="diy-model-delete">删除当前模型</div>
+    </div>
+    <!-- 模型调整面板 -->
+    <div class="diy-model-change">
+      <span class="close"></span>
+      <div class="diy-model-change-text">调试模型</div>
+      <div class="diy-model-change-dispalybox">
+        <img src="" alt="" class="diy-model-change-dispalybox-img" />
+        <span class="diy-model-change-dispalybox-modelname"></span>
+      </div>
+      <div class="diy-model-change-changebox">
+        <div class="diy-model-change-changebox-item">
+          <span class="diy-model-change-changebox-item-title">模型尺寸</span>
+          <input
+            type="range"
+            name=""
+            id="diy-model-change-size"
+            min="-4"
+            max="4"
+            step="0.1"
+          />
+          <div class="diy-model-change-item-text">
+            <span>缩小</span>
+            <span class="diy-model-change-reset">默认</span>
+            <span>放大</span>
+          </div>
+        </div>
+        <div class="diy-model-change-changebox-item">
+          <span class="diy-model-change-changebox-item-title">旋转角度</span>
+          <input
+            type="range"
+            name=""
+            id="diy-model-change-rotation"
+            min="-180"
+            max="180"
+            step="0.1"
+          />
+          <div class="diy-model-change-item-text">
+            <span>逆时针转动</span>
+            <span class="diy-model-change-reset">默认</span>
+            <span>顺时针转动</span>
+          </div>
+        </div>
+        <div class="diy-model-change-changebox-item">
+          <span class="diy-model-change-changebox-item-title">水平位置</span>
+          <input
+            type="range"
+            name=""
+            id="diy-model-change-x"
+            min="-200"
+            max="200"
+            step="10"
+          />
+          <div class="diy-model-change-item-text">
+            <span>向左</span>
+            <span class="diy-model-change-reset">默认</span>
+            <span>向右</span>
+          </div>
+        </div>
+        <div class="diy-model-change-changebox-item">
+          <span class="diy-model-change-changebox-item-title">垂直位置</span>
+          <input
+            type="range"
+            name=""
+            id="diy-model-change-z"
+            min="-200"
+            max="200"
+            step="10"
+          />
+          <div class="diy-model-change-item-text">
+            <span>向前</span>
+            <span class="diy-model-change-reset">默认</span>
+            <span>向后</span>
+          </div>
+        </div>
+        <div class="diy-model-change-changebox-item">
+          <span class="diy-model-change-changebox-item-title">高度位置</span>
+          <input
+            type="range"
+            name=""
+            id="diy-model-change-y"
+            min="-100"
+            max="100"
+            step="5"
+          />
+          <div class="diy-model-change-item-text">
+            <span>向下</span>
+            <span class="diy-model-change-reset">默认</span>
+            <span>向上</span>
+          </div>
+        </div>
+      </div>
+      <div class="diy-model-change-save">保存</div>
+    </div>
+    <!-- 自定义模型添加 -->
+    <div class="diy-model-model">
+      <span class="close2"></span>
+      <span class="diy-model-model-title">模型编辑</span>
+      <span class="iconfont icon-moxing"></span>
+      <div>
+        <div class="diy-model-model-main">
+          <div class="diy-model-model-pre">
+            <svg class="icon icon-icon-damoxingwenjian" aria-hidden="true">
+              <use xlink:href="#icon-icon-damoxingwenjian"></use>
+            </svg>
+            <input type="file" webkitdirectory multiple id="model-model-file" />
+          </div>
+          <div class="diy-model-model-edit-btn">
+            <div class="diy-model-model-add-btn">添加</div>
+          </div>
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <!-- 反射设置 -->
+    <div class="diy-material">
+      <span class="close"></span>
+      <p class="diy-material-title">编辑材质反射</p>
+      <div class="diy-material-main">
+        <div class="diy-material-box">
+          <div class="diy-material-box-open">
+            <p class="diy-material-box-title">材质一反射</p>
+            <div class="togglePosition">
+              <label class="toggle">
+                <input type="checkbox" class="open" />
+                <div class="track">
+                  <div class="handle"></div>
+                </div>
+              </label>
+            </div>
+          </div>
+          <span class="diy-material-box-alert"
+            >（在场景中展现在地面、画框等物体上）</span
+          >
+          <div class="diy-material-box-change">
+            <span class="diy-material-box-title2">材质一反射参数</span>
+            <input
+              type="range"
+              name=""
+              class="range-level"
+              max="2"
+              min="0"
+              step="0.1"
+              value="0"
+            />
+            <span class="range-level-val">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="diy-material-save">保存</div>
+    </div>
+    <!-- 交换名片提醒 -->
+    <div class="exchange">
+      <p class="exchange-main">
+        <span class="exchange-name">武则天</span>
+        <span> 希望与你交换联系方式，同意后可在通讯录查看对方名片。 </span>
+      </p>
+      <div class="exchange-agree">同意</div>
+      <div class="exchange-refuse">拒绝</div>
+    </div>
+    <!-- 提示音乐 -->
+    <audio autoplay="autoplay" id="auto" src=""></audio>
+    <!-- 评论框 -->
+  <div id="pinglun" style="display: none; position: absolute;top: 40%; left: 50%; width: 460px; height: 200px;">
+    <div class="inputA">
+      <textarea id="pingText" class="input" onkeyup="checkLen(this)" placeholder=""></textarea>
+    </div>
+    <div class="tou"></div>
+    <div class="number">
+      <div class="count" id="count">0</div>
+      <div style="margin-left: 18px">/30</div>
+    </div>
+
+    <div style="text-align:right; margin-top:10px">
+      <input id="quxiao" type="button"
+        style="height: 30px; width: 70px; border: 0; outline: none; color: white; background: #777575; border-radius: 15px; font-size: 15px;" />
+      <input id="fabiao" type="button"
+        style="height: 30px; width: 70px; border: 0; outline: none;  color: white; background: #d91616; border-radius: 15px; font-size: 15px;" />
+    </div>
+  </div>
+  </div>
+
+  <span class="oldMessage" id="oldMessage"></span>
+  <div class="messagePar" id="messagePar">
+    <div class="message">
+      <button class="begin"></button>
+      <li class="content">
+        <input class="inputContent" onkeyup="len(this)" placeholder="你说的话" />
+      </li>
+      <button class="send"></button>
+    </div>
+  </div>
+
+  <div class="messageHidePar" id="messageHidePar">
+    <div class="messageHide">
+      <button class="mhClose"></button>
+    </div>
+  </div>
+
+    <script src="museum1.js"></script>
+
+    <script type="text/javascript">
+      function checkLen(obj) {
+        var maxChars = 30; //最多字符数
+        if (obj.value.length > maxChars)
+          obj.value = obj.value.substring(0, maxChars);
+        var curr = obj.value.length;
+        document.getElementById("count").innerHTML = curr.toString();
+      }
+    </script>
+  </body>
+
+  <script type="text/javascript">
+    const ua = navigator.userAgent.toLowerCase();
+    const testUa = (regexp) => regexp.test(ua);
+    const testVs = (regexp) =>
+      ua
+        .match(regexp)
+        .toString()
+        .replace(/[^0-9|_.]/g, "")
+        .replace(/_/g, ".");
+    // 接上以上if...else条件判断
+    // ......
+    // 获取到system、systemVs、platform、engine、engineVs、supporter、supporterVs、shell、shellVs
+    let engine = "unknow";
+    let supporter = "unknow";
+    if (testUa(/applewebkit/g)) {
+      engine = "webkit"; // webkit内核
+      if (testUa(/edge/g)) {
+        supporter = "edge"; // edge浏览器
+      } else if (testUa(/opr/g)) {
+        supporter = "opera"; // opera浏览器
+      } else if (testUa(/chrome/g)) {
+        supporter = "chrome"; // chrome浏览器
+      } else if (testUa(/safari/g)) {
+        supporter = "safari"; // safari浏览器
+      }
+    } else if (testUa(/gecko/g) && testUa(/firefox/g)) {
+      engine = "gecko"; // gecko内核
+      supporter = "firefox"; // firefox浏览器
+    } else if (testUa(/presto/g)) {
+      engine = "presto"; // presto内核
+      supporter = "opera"; // opera浏览器
+    } else if (testUa(/trident|compatible|msie/g)) {
+      engine = "trident"; // trident内核
+      supporter = "iexplore"; // iexplore浏览器
+    }
+    if (
+      supporter != "chrome" &&
+      supporter != "firefox" &&
+      supporter != "edge"
+    ) {
+      let uaalert = document.createElement("div");
+
+      uaalert.innerHTML =
+        "<img style= 'margin: -3px 5px 0 0; height: 16px; border: none; vertical-align: middle;'' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACDklEQVRYR+WXTUgVURSAv4s8UzRpkZBiLSJcuJAWJW2s56p8i6BNmyAJglct20SELhTBVTt/3isQhTZuhMCfnaabh7UIhAdFtNBHCQaJEqUhV96980ZnbHTuOHKFBgaGmXvO+e45Z849R2BwyTHKWaMNuA00AfVI6pUKwTdQdx54yxlmxF22DlMvDltQ/C6HOccWXcA9oCaMDLAOvKGcbvGAlSCZAwHkJKdY5gWCp0iqQhr2LhP8QvKS8/SKFJt+HYEAatd/GUdyLZLh/ZZyJLjj98Y/AeQrmpFMIGmIxXhJiaCAJCXSLO6+8llwdv4+duN7IRJcLXnC4wEV8wKzsbk9OPNyNJAs5oQXIEM30Bmr24OV9Yg0XS6A4/ovkbPdlLr4dyS4tAuQYQB4bKTn+muou6FFvr+DuYdG4sCgAlAV7ierBkVGG7o1CRfa9fPSFEynTAHWNUCWm0imTaVjAKAE0I/kiU2AGSRJmwCfkDTaA8iwAVT/xwBZLIcgS7QkPHsFKmt15H6vwo8PxlE82m9obG6/wNEKUWwAUUvx6YvQOqQx5h/BxldTJF2KVTmOchglR6DxvlbweRRmO0wB9GF0MgB0E2rWD7T0weVnegcf+2DheXgP+PsBxwtmHVFZBTQ5LUR+ELb/hAcAb0ekAGz3hApCh8JOV+wmpM25wIWwORm5EDZnw73pfJzT8Q7Wl+gPnq9T4wAAAABJRU5ErkJggg=='>为了给您良好的用户体验，建议使用Chrome、Firefox、Edge浏览器访问。";
+      uaalert.style.cssText =
+        "position:fixed;top:0;left:0;right:0;height: 40px;line-height: 40px;font-size: 12px;font-weight: 400;text-align: center;background: #fff9e6;color: #333;";
+      document.body.appendChild(uaalert);
+    }
+    function initLanguage(lng) {
+      i18next.use(i18nextLocizeBackend).init(
+        {
+          fallbackLng: lng,
+          //debug: true,
+          ns: ["translation"], //这里可以引用多个json文件，如 ['index', 'common'] 就是index.json、common.json
+          defaultNS: "translation", //对应的i18n文件夹中的index.json文件
+          backend: {
+            loadPath: "./i18n/{{lng}}/{{ns}}.json", //加载对应的语言包和文件 如 ./i18n/en/index.json
+          },
+        },
+        function (err, t) {
+          jqueryI18next.init(i18next, $);
+
+          $("[data-i18n]").localize();
+        }
+      );
+    }
+    function initLanguageNow() {
+      if (!document.cookie.match(/(?<=language=)\d/g)) {
+        initLanguage("zh");
+      } else {
+        let lng =
+          document.cookie.match(/(?<=language=)\d/g)[0] === "0" ? "zh" : "en";
+        initLanguage(lng);
+      }
+    }
+    initLanguageNow();
+    $(".translate-btn").click(() => {
+      setTimeout(() => initLanguageNow(), 0);
+    });
+    $(".submit").click(() => {
+      let lng =
+        document.cookie.match(/(?<=language=)\d/g)[0] === "0" ? "zh" : "en";
+
+      initLanguage(lng);
+    });
+  </script>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "museum",
+  "version": "0.2.0",
+  "description": "just a joy",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/jquery": "^3.3.38",
+    "ali-oss": "^6.8.0",
+    "axios": "^0.19.0",
+    "jquery": "^3.5.1",
+    "jquery-i18next": "^1.2.1",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-compress": "^3.0.0",
+    "koa-router": "^7.4.0",
+    "koa-send": "^5.0.0",
+    "perfect-scrollbar": "^1.5.0",
+    "qrcode": "^1.4.4",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@types/ali-oss": "^6.0.5",
+    "@types/axios": "^0.14.0",
+    "@types/handsontable": "^0.35.0",
+    "@types/node": "^11.13.4",
+    "@types/qs": "^6.9.2",
+    "@types/request": "^2.48.4",
+    "browserify": "^16.2.3",
+    "gulp": "^4.0.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-typescript": "^5.0.1",
+    "gulp-uglify": "^3.0.2",
+    "gulp-util": "^3.0.8",
+    "mocha": "^6.1.2",
+    "ts-node": "^8.0.3",
+    "tsify": "^4.0.1",
+    "typescript": "^3.4.3",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.1"
+  },
+  "author": "Eric.J",
+  "license": "ISC"
+}

@@ -1,0 +1,30 @@
+﻿{
+  "1hua_01": {
+    "title": "展会案例",
+    "title_en":"exp",
+    "english": "",
+    "content": "汇集了来自国内知名美术院校的设计精英,凭借着出色的设计、精细的制作和优质的服务以及技艺精湛的施工队伍，确保了客户能够以最合理的价格，得到最可靠的质量保证。\n联系方式：Owen 13601660903  VX：ikeowen​​",
+    "content_en":"foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar",
+    "link": "",
+    "photo360": "",
+    "model3d": "",
+    "video": ["21s.mp4"],
+    "left": false,
+    "highpic": "展画6",
+    "pdf":""
+  },
+  "1hua_02": {
+    "title": "展会案例",
+    "title_en":"exp",
+    "english": "",
+    "content": "汇集了来自国内知名美术院校的设计精英,凭借着出色的设计、精细的制作和优质的服务以及技艺精湛的施工队伍，确保了客户能够以最合理的价格，得到最可靠的质量保证。\n联系方式：Owen 13601660903  VX：ikeowen​​",
+    "content_en":"foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar",
+    "link": "",
+    "photo360": "",
+    "model3d": "",
+    "video": ["21s.mp4"],
+    "left": true,
+    "highpic": "展画6",
+    "pdf":""
+  }
+  }

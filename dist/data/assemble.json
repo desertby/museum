@@ -1,0 +1,41 @@
+{
+  "lobby": [
+    {
+      "index": "0",
+      "sceneFile": "./assemble/A/",
+      "fileName": "A.babylon",
+      "door1": "A-D_2",
+      "door2": "A-D_1",
+      "bgMusic": "sound/bgm01.mp3",
+      "descant": "",
+      "position":[100, 160.8, 100],
+      "rotation":[0, 144, 0],
+      "projectID": "qiTest0327",
+      "museumName": "",
+      "forceLogin": false,
+      "creatAccount": "17857166389",
+      "teleportMap":true,
+      "PTP":false
+    }
+  ],
+  "exhibits": [
+    {
+      "index": "1",
+      "sceneFile": "./assemble/B/",
+      "fileName": "B.babylon",
+      "door1": "B-D_1",
+      "door2": "B-D_2",
+      "bgMusic": "./sound/bgm01.mp3",
+      "descant": ""
+    },
+    {
+      "index": "2",
+      "sceneFile": "./assemble/C/",
+      "fileName": "C.babylon",
+      "door1": "C-D_1",
+      "door2": "C-D_2",
+      "bgMusic": "./sound/bgm01.mp3",
+      "descant": ""
+    }
+  ]
+}

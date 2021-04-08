@@ -1,0 +1,44 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f2f2f2;
+  font-size: 16px;
+  color: #222;
+  font-weight: normal;
+  letter-spacing: 0.03em;
+}
+ a:link{
+   text-decoration:none;
+ }
+ a:visited{
+   text-decoration:none;
+ }
+ a:hover{
+   text-decoration:none;
+ }
+ a:active{
+   text-decoration:none;
+ }
+ p{
+	 margin: 0;
+ }
+section {
+  width: 100%;
+}
+
+/* 滑动模块样式 */
+ .a6{
+     width: 30%;
+	 margin-top: 10%;
+ }
+ .a3{
+   font-size: 20px;font-weight: bold;color: white;padding-top: 15px;
+ }
+ .a4{
+   height:2px;border:none;border-top:2px solid #dfbc5e;width: 30px;margin-top: 10px;margin-bottom: 10px;
+ }
+ .a5{
+   color: white;font-size: 14px;
+ }
+ .a2{
+   width: 20%;margin-top: 15px;
+ }
