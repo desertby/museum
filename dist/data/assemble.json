@@ -21,15 +21,6 @@
   "exhibits": [
     {
       "index": "1",
-      "sceneFile": "./assemble/B/",
-      "fileName": "B.babylon",
-      "door1": "B-D_1",
-      "door2": "B-D_2",
-      "bgMusic": "./sound/bgm01.mp3",
-      "descant": ""
-    },
-    {
-      "index": "2",
       "sceneFile": "./assemble/C/",
       "fileName": "C.babylon",
       "door1": "C-D_1",

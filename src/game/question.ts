@@ -8,6 +8,7 @@ import { xuebei } from "./xuebei";
 import { GlobalControl } from "./globalControl";
 import { Exhibits } from "./exhibits";
 import { Language } from "./language";
+import { Game } from "./game";
 
 export class Question {
   private _guideElement: UIControl = new UIControl();
@@ -44,6 +45,10 @@ export class Question {
   private _exhibits: exData[] = [];
   public static singleScore: number = 0;
 
+  private _finish:boolean = false;
+  private successPanel:BABYLON.GUI.Rectangle;
+  public static _returnLock: BABYLON.AbstractMesh;
+
   public constructor(scene: BABYLON.Scene, canvas: HTMLCanvasElement) {
     this._scene = scene;
     this._canvas = canvas;
@@ -67,30 +72,6 @@ export class Question {
       .catch(function (error) {
         console.log("load error: " + error);
       });
-  }
-
-  private loadExhibitsData(): void {
-    let that = this;
-    // 获取表格数据
-    axios
-      .get("./data/assemble.json")
-      .then(function (response) {
-        that._exhibitsData = response.data;
-        that.loadExhibits("exhibits");
-      })
-      .catch(function (error) {
-        console.log("load error: " + error);
-      });
-  }
-
-  private loadPersonData(): void {
-    //BusinessRoom.act=this.gogo.bind(this);
-  }
-
-  private gogo(buf: ByteBuffer) {
-    VeryNettyPara.roomIndex = buf.ReadInt();
-    this._personData = VeryNettyPara.roomIndex - 1;
-    console.log(this._personData);
   }
 
   // 鼠标点击小锁，出现考试界面
@@ -754,29 +735,97 @@ export class Question {
     this._checking = false;
     this._hide = false;
 
-    // 显示成功UI
-    this._successUI.isVisible = true;
-    setTimeout(this.showSuccess.bind(this), 2000);
-
-    // 把对应的门也删除了
-    Question._doors.shift()!.dispose();
-    Question._locks.shift()!.parent.dispose();
-
-    // TODO：成绩上传，过一个门多25分
-
-    console.log(
-      `当前成绩： ${
-        (Question._doorNumbers - Question._doors.length) * Question.singleScore
-      } 分`
-    );
-    xuebei.AddStep(
-      "解锁第" + (Question._doorNumbers - Question._doors.length) + "展馆",
-      Question.singleScore
-    );
-    VeryNettyPara.roomIndex = Question._doorNumbers - Question._doors.length;
-    if (Question._doors.length === 0) {
+    //问答题结束之后的操作，判断是否拼接成回路，如果是删除门和锁
+    //--如果不是，最后一个展厅的门不删除
+    //----判断是否有链接跳转到下一个展厅，如果是点击之后跳转，如果不是不处理
+    if (Question._doors.length === 1 && Exhibits.assembleData.lobby[0].link && Exhibits.assembleData.lobby[0].link !== "" && Exhibits.assembleData.lobby[0].link !== null) {
+      //该展馆最后一个展厅问答题结束后，并且存在跳转链接
+      this.lastDoor();
+      //上传成绩
+      console.log(`当前成绩： ${(Question._doorNumbers - Question._doors.length) * Question.singleScore} 分`);
+      xuebei.AddStep("解锁第" + (Question._doorNumbers - Question._doors.length) + "展馆", Question.singleScore);
+      VeryNettyPara.roomIndex = Question._doorNumbers - Question._doors.length;
       xuebei.Upload();
+    } else {
+      // 显示成功UI
+      this._successUI.isVisible = true;
+      setTimeout(this.showSuccess.bind(this), 2000);
+
+      // 把对应的门也删除了
+      //没有拼接成功的回路，不删除最后一个门，只删除锁
+      console.log(Question._doors.length,)
+      if(Question._doors.length !== 1 || (Game._ports2.length >1 && Game.isLoop(Game._ports2[0], Game._ports2[Game._ports2.length - 1]))){
+        Question._doors.shift()!.dispose();
+      }
+      Question._locks.shift()!.parent.dispose();
+
+      // TODO：成绩上传
+      console.log(`当前成绩： ${(Question._doorNumbers - Question._doors.length) * Question.singleScore} 分`);
+      xuebei.AddStep("解锁第" + (Question._doorNumbers - Question._doors.length) + "展馆", Question.singleScore);
+      VeryNettyPara.roomIndex = Question._doorNumbers - Question._doors.length;
+      if (Question._locks.length === 0) {
+        xuebei.Upload();
+      }
     }
+    
+  }
+
+  private lastDoor(): void {
+    this._finish = true;
+    //success panel
+    this.successPanel = new BABYLON.GUI.Rectangle('successPanel');
+    this.successPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    this.successPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    this.successPanel.background = '#FFFFFF00';
+    this.successPanel.color = '#FFFFFF00';
+    this.successPanel.thickness = 0;
+    this.successPanel.width = "488px";
+    this.successPanel.height = "260px";
+    this.successPanel.isVisible = true;
+    UIMain.advancedTexture.addControl(this.successPanel);
+
+    let successBack = new BABYLON.GUI.Image("successBG", "images/question/op.png");
+    successBack.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    successBack.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    successBack.width = "488px";
+    successBack.height = "260px"
+    this.successPanel.addControl(successBack);
+
+    let yesBtn = BABYLON.GUI.Button.CreateImageOnlyButton("yesBtn", "images/question/yes.png");
+    yesBtn.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    yesBtn.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    yesBtn.thickness = 0;
+    yesBtn.top = "171px";
+    yesBtn.left = "85px";
+    yesBtn.width = "127px";
+    yesBtn.height = "44px"
+    this.successPanel.addControl(yesBtn);
+
+    let noBtn = BABYLON.GUI.Button.CreateImageOnlyButton('noBtn', 'images/question/no.png');
+    noBtn.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    noBtn.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    noBtn.thickness = 0;
+    noBtn.top = "171px";
+    noBtn.left = "277px";
+    noBtn.width = "127px";
+    noBtn.height = "44px";
+    noBtn.onPointerClickObservable.add(() => {
+      this.successPanel.isVisible = false;
+    });
+    this.successPanel.addControl(noBtn);
+
+    noBtn.onPointerClickObservable.add(() => {
+      this.successPanel.isVisible = false;
+    })
+
+    yesBtn.onPointerClickObservable.add(() => {
+      if (/(http|https):\/\/([\w.]+\/?)\S*/g.test(Exhibits.assembleData.lobby[0].link)) {
+        window.location.href = Exhibits.assembleData.lobby[0].link;
+      } else {
+        window.location.href = "http://" + Exhibits.assembleData.lobby[0].link;
+      }
+    })
+
   }
 
   public update() {
@@ -800,30 +849,9 @@ export class Question {
     this._successUI.dispose();
   }
 
-  //整体展厅数据加载
-  public loadExhibits(info: string): void {
-    if (this._exhibitsData[info]) {
-      this._exhibits = [];
-      for (let i: number = 0; i < this._exhibitsData[info].length; i++) {
-        let para: exData = {
-          index: this._exhibitsData[info][i].index,
-          sceneFile: this._exhibitsData[info][i].sceneFile,
-          fileName: this._exhibitsData[info][i].fileName,
-          door1: this._exhibitsData[info][i].door1,
-          door2: this._exhibitsData[info][i].door2,
-        };
-        this._exhibits.push(para);
-      }
-      this.initDoor(this._exhibits);
-    }
-  }
-
   public test() {
     this._scene.onPointerObservable.add((info) => {
-      if (
-        info.type === BABYLON.PointerEventTypes.POINTERDOWN &&
-        info.event.button === 0
-      ) {
+      if (info.type === BABYLON.PointerEventTypes.POINTERDOWN &&info.event.button === 0 && !this._finish) {
         if (info.pickInfo && info.pickInfo.hit) {
           this.pickedMesh = info.pickInfo.pickedMesh!;
           if (Question._locks.length !== 0) {
@@ -834,33 +862,17 @@ export class Question {
             }
           }
         }
+      } else if(info.type === BABYLON.PointerEventTypes.POINTERDOWN && info.event.button === 0 && this._finish){
+        if (info.pickInfo && info.pickInfo.hit) {
+          this.pickedMesh = info.pickInfo.pickedMesh!;
+          if (Question._locks.length !== 0) {
+            if (this.pickedMesh.name === Question._locks[0].name) {
+              this.successPanel.isVisible = true;
+            }
+          }
+        }
       }
     });
-  }
-
-  public initDoor(data: exData[]): void {
-    Question._doors = [];
-    Question._locks = [];
-
-    for (let i: number = 0; i < data.length; i++) {
-      if (
-        this._scene.getMeshByName(data[i].index + "men_00" + data[i].door2[4])
-      ) {
-        var doorPlane1 = this._scene.getMeshByName(
-          data[i].index + "men_00" + data[i].door2[4]
-        );
-        doorPlane1!.material!.backFaceCulling = false;
-        doorPlane1!.visibility = 0.55;
-        var lock1 = this._scene.getMeshByName(
-          data[i].index + "suo_00" + data[i].door2[4]
-        );
-
-        Question._doors.push(doorPlane1!);
-        Question._locks.push(lock1);
-      }
-    }
-    Question._doorNumbers = Question._doors.length;
-    Question.singleScore = Math.round(100 / Question._doorNumbers);
   }
 }
 

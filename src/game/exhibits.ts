@@ -163,7 +163,7 @@ export class Exhibits {
         $(".business-card").on("click",function(){
           //close all
           $(
-            ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-model,.diy-model-model,.diy-material"
+            ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-exhibitLink,.diy-model,.diy-model-model,.diy-material"
           ).hide();
           $("#bg").show();
           const ulBtnNode = $(
@@ -584,7 +584,6 @@ export class Exhibits {
           console.log(error);
         });
     });
-
 
     this._scene = scene;
     this._canvas = canvas;
@@ -3034,6 +3033,7 @@ export class Exhibits {
   }
   // 外景编辑
   public diyWaijingPlane() {
+    if(Exhibits.assembleData.lobby[0].fileName[0] !== "A") return
     let filePath = VeryNettyPara.ProjectID + "/assemble/A/全景照片.jpg";
     this.uploadFile(this.applyTokenDo(), "diy-waijing-file", filePath, () => {
       axios.get("./assemble/A/全景照片.jpg").then(() => {
@@ -3272,31 +3272,14 @@ export class Exhibits {
             "inline-block"
           );
           btnshow = true;
-          this.editModelButton(
-            "m_",
-            25,
-            25,
-            0,
-            "model",
-            this,
-            this.modelPlane.bind(this)
-          );
+          this.editModelButton("m_",25,25,0,"model",this,this.modelPlane.bind(this) );
           this.editHuaButton("hua_", 25, 25, 90, "hua");
-
           //texture button
           this.editTietuButton("t_", 25, 25, 90, "texture");
           //title button
           this.editTitleButton("title", 25, 25, 90, "title");
           //screen video button
-          this.editButton(
-            "视频",
-            50,
-            50,
-            90,
-            "video",
-            this,
-            this.diyVideoPlane
-          );
+          this.editButton("视频",50,50,90,"video",this,this.diyVideoPlane);
           //door button
           this.editDoorButton();
           this.diyBGM();
@@ -4460,6 +4443,48 @@ export class Exhibits {
     console.log(htmlNodes);
   }
 
+  //问答题后跳转链接编辑
+  public diyExhibitLink() {
+    let that = this;
+    //关闭其他页面，打开编辑页面
+    this.closeall2();
+    $(".diy-exhibitLink").show();
+    if(Exhibits.assembleData.lobby[0].link && Exhibits.assembleData.lobby[0].link !== "" && Exhibits.assembleData.lobby[0].link !== null){
+      $(".diy-exhibitLink-input").val(Exhibits.assembleData.lobby[0].link);
+    }
+
+    // 修改链接
+    // 保存链接
+    $(".diy-exhibitLink-save")
+      .off("click")
+      .click(() => {
+        if (!$(".diy-exhibitLink-input").val()) {
+          window.alert("网址为空,保存后展厅将没有跳转链接");
+          $(".diy-exhibitLink-input").val("")
+        }
+        Exhibits.assembleData.lobby[0].link = $(".diy-exhibitLink-input").val();
+        let run = new Promise(function (resolve, reject) {
+          resolve(that.updateDataAndJson("assemble"))
+        })
+          .then(function () {
+            $(".upload-success").show().delay(500).hide(300);
+            $(".diy-exhibitLink").hide(300);
+            $("#bg").hide();
+          })
+      });
+
+      //清空输入框内容
+      $(".diy-exhibitLink-delete-link")
+      .off("click")
+      .click(() => {
+        if ($(".diy-exhibitLink-input").val()) {
+          $(".diy-exhibitLink-input").val("");
+        }
+      });
+
+
+  }
+
   // 更新json
   private updateDataAndJson(jsonName: string, callback?: () => void): void {
     //修改内容
@@ -5437,11 +5462,47 @@ export class Exhibits {
         anchor.setParent(null);
         anchor.scaling = new BABYLON.Vector3(1, 1, 1);
         GlobalControl.exhibits._editParent.push(anchor);
-        anchor.getChildMeshes()[0].position = new BABYLON.Vector3(0,10,0);
+        anchor.getChildMeshes()[0].position = new BABYLON.Vector3(0,20,0);
         anchor.getChildMeshes()[0].rotation = new BABYLON.Vector3(Math.PI/2,0,0);
         anchor.getChildMeshes()[0].scaling = new BABYLON.Vector3(20, 20, 20);
         
       });
+      //最后一个门增加跳转链接编辑按钮
+      //判断是否为拼接类型中的拼接回路成功，如果是返回，不是执行以下操作
+      if(Exhibits.assembleData['exhibits'] && Game.isLoop(Game._ports2[0], Game._ports2[Game._ports2.length - 1])) return
+      let finalDoor = Question._doors[Question._doors.length -1];
+      let panel = new BABYLON.GUI.PlanePanel();
+      manager.addControl(panel);
+      let anchor = new BABYLON.TransformNode(finalDoor.name);
+      panel.linkToTransformNode(anchor);
+      let button = new BABYLON.GUI.HolographicButton("orientation");
+      panel.addControl(button);
+      button.backMaterial.alpha = 0.5;
+      button.backMaterial.albedoColor = BABYLON.Color3.FromHexString("#0091FF");
+      let image = new BABYLON.GUI.Image(finalDoor.name,"images/question/link.png");
+      image.width = "30%";
+      image.height = "30%"
+      image.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+      image.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+      button.content = image;
+
+      button.onPointerClickObservable.add((info) => {
+        //TO DO
+        this.closeall();
+        this.diyExhibitLink();
+      });
+      //set parent
+      let btnExhibit: BABYLON.AbstractMesh = finalDoor;
+      anchor.setParent(btnExhibit);
+      anchor.position = BABYLON.Vector3.Zero();
+      anchor.rotation = BABYLON.Vector3.Zero();
+      anchor.setParent(null);
+      anchor.scaling = new BABYLON.Vector3(1, 1, 1);
+      GlobalControl.exhibits._editParent.push(anchor);
+      anchor.getChildMeshes()[0].position = new BABYLON.Vector3(0,20,-40);
+      anchor.getChildMeshes()[0].rotation = new BABYLON.Vector3(Math.PI/2,0,0);
+      anchor.getChildMeshes()[0].scaling = new BABYLON.Vector3(20, 20, 20);
+
     }
   }
 
@@ -5827,8 +5888,9 @@ export class Exhibits {
               }
             });
           } else {
-            that.house = "/assemble/A/";
-            that.houseLetter = "A";
+            that.house = that.exhibits["lobby"][0].sceneFile.substring(1);
+            that.houseLetter = that.exhibits["lobby"][0].fileName.substring(0, 1);
+            console.log(that.houseLetter);
             if (callback) {
               callback();
             }
@@ -5849,8 +5911,9 @@ export class Exhibits {
           }
         });
       } else {
-        that.house = "/assemble/A/";
-        that.houseLetter = "A";
+        that.house = that.exhibits["lobby"][0].sceneFile.substring(1);
+        that.houseLetter = that.exhibits["lobby"][0].fileName.substring(0, 1);
+        console.log(that.houseLetter);
         if (callback) {
           callback();
         }
@@ -5859,14 +5922,14 @@ export class Exhibits {
   }
   private closeall() {
     $(
-      ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-model,.diy-model-model,.diy-material"
+      ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-exhibitLink,.diy-model,.diy-model-model,.diy-material"
     ).hide();
     $("#bg").show();
     this.removeallbg();
   }
   private closeall2() {
     $(
-      ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-model,.diy-model-model,.diy-material"
+      ".diy-model-change,.operating-instructions-box,#bg,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-exhibitLink,.diy-model,.diy-model-model,.diy-material"
     ).hide();
     $("#bg").show();
   }

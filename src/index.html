@@ -708,7 +708,6 @@
         display: none;
       }
 
-      .icon-bianji,
       .icon-signboard,
       .icon-shubiao {
         font-size: 40px;
@@ -718,7 +717,8 @@
       .icon-jieshuoci,
       .icon-beijingyin,
       .icon-tongyong,
-      .icon-360waijing {
+      .icon-360waijing,
+      .icon-bianji2 {
         font-size: 25px;
         line-height: 60px;
       }
@@ -4778,6 +4778,95 @@
       display: none;
     }
 
+    /*跳转链接按钮添加链接界面 */
+    .diy-exhibitLink {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 284px;
+        border-radius: 30px;
+        background-color: rgba(225, 225, 225, 1);
+      }
+
+      .diy-exhibitLink-title {
+        margin-top: 47px;
+        margin-left: 47px;
+        width: 128px;
+        height: 45px;
+        font-size: 32px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #000000;
+        line-height: 45px;
+      }
+
+      .diy-exhibitLink-link {
+        position: relative;
+        display: flex;
+      }
+
+      .diy-exhibitLink-addressTitle {
+        height: 33px;
+        line-height: 33px;
+        font-size: 24px;
+        margin-left: 46px;
+      }
+
+      .diy-exhibitLink-bg {
+        position: relative;
+        display: inline-block;
+        width: 420px;
+        height: 44px;
+        line-height: 44px;
+        background-color: #ececec;
+        border-radius: 22px;
+        margin-left: 18px;
+      }
+
+      .diy-exhibitLink-input{
+        margin: 0;
+        padding: 0;
+        width: 330px;
+        height: 42px;
+        margin-left: 10px;
+        outline-style: none;
+        background: rgba(236, 236, 236, 1);
+        border: none;
+        border-radius: 6px;
+      }
+
+      .diy-exhibitLink-delete-link {
+        display: block;
+        position: absolute;
+        top: 0px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        font-size: 0;
+        cursor: pointer;
+      }
+
+      .icon-chacha {
+        font-size: 12px;
+      }
+
+      .diy-exhibitLink-save {
+        position: absolute;
+        height: 40px;
+        width: 110px;
+        background-color: #009fe9;
+        bottom: 34px;
+        left: 250px;
+        border-radius: 20px;
+        line-height: 40px;
+        font-size: 21px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -5009,7 +5098,7 @@
       </div>
       <div class="bgm-btn"><span class="iconfont icon-beijingyin"></span></div>
       <div class="common-btn"><span class="iconfont icon-tongyong"></span></div>
-      <div class="setup-btn"><span class="iconfont icon-bianji"></span></div>
+      <div class="setup-btn"><span class="iconfont icon-bianji2"></span></div>
       <div class="signboard-btn">
         <span class="iconfont icon-signboard"></span>
       </div>
@@ -5943,6 +6032,27 @@
         </div>
       </div>
       <div class="diy-question-save">保存</div>
+    </div>
+    <!-- 问答题后跳转链接编辑 -->
+    <div class="diy-exhibitLink">
+      <span class="close"></span>
+      <p class="diy-exhibitLink-title">跳转链接</p>
+      <diy class="diy-exhibitLink-link">
+        <span class="diy-exhibitLink-addressTitle">链接地址</span>
+        <div class="diy-exhibitLink-bg">
+          <input
+          type="text"
+          class="diy-exhibitLink-input"
+          autofocus
+          placeholder="请输入网址"/>
+          <span class="diy-exhibitLink-delete-link">
+            <span class="iconfont icon-chacha"></span>
+          </span>
+        </div>
+        
+      </diy>
+      
+      <div class="diy-exhibitLink-save">保存</div>
     </div>
     <!-- 模型放置面板 -->
     <div class="diy-model">

@@ -214,9 +214,7 @@ export class Game {
               //大厅对接门1号标记
               Game._ports = [];
               if (that._scene.getMeshByName(that._data["lobby"][0].door2)) {
-                var Port1 = that._scene.getMeshByName(
-                  that._data["lobby"][0].door2
-                );
+                var Port1 = that._scene.getMeshByName(that._data["lobby"][0].door2);
                 Game._ports.push(Port1);
               }
 
@@ -232,29 +230,15 @@ export class Game {
               }
               // 加载背景音乐和解说词
               if (that._data["lobby"][0].bgMusic !== "") {
-                let bg = new BABYLON.Sound(
-                  "bgMusic" + that._data["lobby"][0].index,
-                  that._data["lobby"][0].bgMusic,
-                  that._scene,
-                  null,
-                  { loop: true, autoplay: false }
-                );
+                let bg = new BABYLON.Sound("bgMusic" + that._data["lobby"][0].index,that._data["lobby"][0].bgMusic,that._scene,null, { loop: true, autoplay: false });
                 AudioControl._bgMusicList[that._data["lobby"][0].index] = bg;
               }
               if (that._data["lobby"][0].descant !== "") {
-                let des = new BABYLON.Sound(
-                  "descant" + that._data["lobby"][0].index,
-                  that._data["lobby"][0].descant,
-                  that._scene,
-                  null,
-                  { loop: false, autoplay: false }
-                );
+                let des = new BABYLON.Sound("descant" + that._data["lobby"][0].index,that._data["lobby"][0].descant,that._scene,null,{ loop: false, autoplay: false });
                 AudioControl._descantList[that._data["lobby"][0].index] = des;
               }
               if (that._scene.getMeshByName("透明门2"))
-                AudioControl._bgMusicDoors[
-                  that._data["lobby"][0].index
-                ] = that._scene.getMeshByName("透明门2");
+                AudioControl._bgMusicDoors[that._data["lobby"][0].index] = that._scene.getMeshByName("透明门2");
 
               //删除大厅透明门
               if (that._scene.getMeshByName("透明门1")) {
@@ -263,12 +247,12 @@ export class Game {
               if (that._scene.getMeshByName("透明门2")) {
                 that._scene.getMeshByName("透明门2").dispose();
               }
-              if (that._scene.getMeshByName("men_001")) {
-                that._scene.getMeshByName("men_001").dispose();
+              //删除多余的锁
+              if (that._scene.getMeshByName("suo-02")) {
+                that._scene.getMeshByName("suo-02").dispose();
               }
-              // if (that._scene.getMeshByName("men_002")) {
-              //   that._scene.getMeshByName("men_002").dispose();
-              // }
+
+
               //camera's position and rotation
               if (that._data['lobby'][0].position && that._data['lobby'][0].rotation) {
                 Game.initPos = new BABYLON.Vector3(that._data['lobby'][0].position[0], that._data['lobby'][0].position[1], that._data['lobby'][0].position[2]);
@@ -277,21 +261,17 @@ export class Game {
                 (that._scene.activeCamera as BABYLON.UniversalCamera).rotation = Game.initRot;
               }
               //设定地面初始位置
-              let aa = that._scene.getMeshByName("A").getAbsolutePosition();
-              let bb = that._scene.getMeshByName("reflection_01").getAbsolutePosition().clone().y;
+              let aa = that._scene.getMeshByName(that._data["lobby"][0].door1[0]);
+              let bb = that._scene.getMeshByName("reflection_01");
               if (aa && bb) {
-                that._scene.getMeshByName("A").setAbsolutePosition(new BABYLON.Vector3(aa.x, aa.y - bb, aa.z));
+                that._scene.getMeshByName(that._data["lobby"][0].door1[0]).setAbsolutePosition(new BABYLON.Vector3(0, aa.getAbsolutePosition().y - bb.getAbsolutePosition().clone().y, 0));
                 that._scene.updateTransformMatrix(true);
               }
 
               //整体展厅数据加载
               if (that._data["exhibits"]) {
                 that._exhibits = [];
-                for (
-                  let i: number = 0;
-                  i < that._data["exhibits"].length;
-                  i++
-                ) {
+                for (let i: number = 0;i < that._data["exhibits"].length;i++) {
                   let para: ExhibitsData = {
                     index: that._data["exhibits"][i].index,
                     sceneFile: that._data["exhibits"][i].sceneFile,
@@ -304,10 +284,35 @@ export class Game {
                   that._exhibits.push(para);
                 }
 
-                //整体展厅拼接
                 Question._doors = [];
                 Question._locks = [];
+                //如果大厅A是第一个展厅，删除第一个展厅的门和锁
+                if (Exhibits.assembleData.lobby[0].fileName[0] === "A") {
+                  if(that._scene.getMeshByName("suo-01")){
+                    that._scene.getMeshByName("suo-01").dispose();
+                  }
+                  if (that._scene.getMeshByName("men_001")) {
+                    that._scene.getMeshByName("men_001").dispose();
+                  }
+                } else{
+                  let door2 = that._scene.getMeshByName("men_001");
+                  door2.visibility = 0.55;
+                  let lock2 = that._scene.getMeshByName("suo_001")
+                  Question._doors.push(door2);
+                  Question._locks.push(lock2);
+                }
+                //整体展厅拼接
                 that.exhibitLoad(0);
+              } else {
+                //单独展厅
+                let door = that._scene.getMeshByName("men_002");
+                if (door) {
+                  door.visibility = 1;
+                }
+                let door1= that._scene.getMeshByName("men_001");
+                let lock = that._scene.getMeshByName("suo_001");
+                Question._doors.push(door1);
+                Question._locks.push(lock);
               }
               //if ptp
               if(that._data["lobby"][0].PTP){
@@ -322,6 +327,232 @@ export class Game {
               }
               SocketManager.Instance.Connect("121.43.136.90", 3331);
               that._museum = new Museum(that._engine,scene,that._canvas,that);
+
+              //结束后回调
+              let observor = that._scene.onReadyObservable.addOnce(() => {
+                
+                Game.diyMeshList = {
+                  reflection: [] as BABYLON.AbstractMesh[],
+                  video: [] as BABYLON.AbstractMesh[],
+                  model: [] as BABYLON.AbstractMesh[],
+                  hua: [] as BABYLON.AbstractMesh[],
+                  title: [] as BABYLON.AbstractMesh[],
+                  texture: [] as BABYLON.AbstractMesh[],
+                };
+                that._scene.meshes.forEach((value) => {
+                  if (value.name.indexOf("reflection") !== -1) {
+                    Game.diyMeshList["reflection"].push(value);
+                  } else if (value.name.indexOf("视频") !== -1) {
+                    Game.diyMeshList["video"].push(value);
+                  } else if (value.name.indexOf("m_") !== -1) {
+                    Game.diyMeshList["model"].push(value);
+                  } else if (value.name.indexOf("hua_") !== -1) {
+                    Game.diyMeshList["hua"].push(value);
+                  } else if (value.name.indexOf("title") !== -1) {
+                    Game.diyMeshList["title"].push(value);
+                  } else if (value.name.indexOf("t_") !== -1) {
+                    Game.diyMeshList["texture"].push(value);
+                  } else {
+                    return;
+                  }
+                });
+        
+                if (JSON.stringify(Game.picData) == "{}") {
+                  Game.diyMeshList["hua"].map((it) => {
+                    let prefix = /.*(?=_)/g.exec(it.name)[0];
+                    let suffix = +/(?<=_).*/g.exec(it.name)[0];
+                    if (!Game.picData[prefix]) {
+                      Game.picData[prefix] = [];
+                    }
+                    Game.picData[prefix][suffix - 1] = {
+                      name: it.name,
+                      url: "./pic/pic.jpg",
+                      title: "第" + suffix + "幅",
+                      index: suffix,
+                    };
+                  });
+                }
+                //model
+                //加载外部模型
+                if (Game.modelData) {
+                  for (var key in Game.modelData) {
+                    GlobalControl.exhibits.modelLoad(
+                      key,
+                      Game.modelData[key].File,
+                      Game.modelData[key].fileName,
+                      Game.modelData[key].scale,
+                      Game.modelData[key].rotation,
+                      Game.modelData[key].x,
+                      Game.modelData[key].y,
+                      Game.modelData[key].z
+                    );
+                  }
+                }
+                //反射
+                let _data: any;
+                let exhibitsArray:string[] = [];
+                let lobbyGorund:string =Exhibits.assembleData["lobby"][0].fileName[0]+"-ground";
+                axios
+                  .get(Exhibits.assembleData["lobby"][0].sceneFile+"exhibitbase.json")
+                  .then((res) => {
+                    _data = res.data;
+                    Game.fontData = _data["definedTitle"];
+                  })
+                  .then(() => {
+                    if (JSON.stringify(Game.reflectionData) == "{}") {
+                      if(Exhibits.assembleData.exhibits){
+                        exhibitsArray = Exhibits.assembleData.exhibits.map((it) => {
+                          return it.fileName.substr(0, 1) + "-ground";
+                        });
+                        exhibitsArray = [lobbyGorund, ...exhibitsArray];
+                      } else exhibitsArray = [lobbyGorund];
+
+                      exhibitsArray = Array.from(new Set(exhibitsArray));
+                        Game.reflectionData = {};
+                        for (let key of exhibitsArray) {
+                          Game.reflectionData[key] = {};
+                          Game.reflectionData[key]["des"] =
+                            _data["reflection"][key]["des"];
+                          Game.reflectionData[key]["isGround"] =
+                            _data["reflection"][key]["isGround"];
+                          Game.reflectionData[key]["open"] =
+                            _data["reflection"][key]["open"];
+                          Game.reflectionData[key]["level"] =
+                            _data["reflection"][key]["level"];
+                          Game.reflectionData[key]["visibility"] =
+                            _data["reflection"][key]["visibility"];
+                        }
+                      
+                      for (var key in Game.reflectionData) {
+                        Game.reflectionFunc(
+                          key,
+                          Game.reflectionData[key].open,
+                          Game.reflectionData[key].level,
+                          Game.reflectionData[key].visibility,
+                          Game.reflectionData[key].isGround,
+                          that._scene
+                        );
+                      }
+                    } else {
+                      for (var key in Game.reflectionData) {
+                        Game.reflectionFunc(
+                          key,
+                          Game.reflectionData[key].open,
+                          Game.reflectionData[key].level,
+                          Game.reflectionData[key].visibility,
+                          Game.reflectionData[key].isGround,
+                          that._scene
+                        );
+                      }
+                    }
+                  })
+                  .then(()=>{
+                    Game._finishLoaded = true;
+                    Game._isAssemble = false;
+                    window.document.getElementById("id-progress2")!.innerHTML ="loading...100%";
+                    setTimeout(() => {
+                      CustomLoadingScreen.loadingScreenDiv!.style.display = "none";
+                      window.document.getElementById("menu").style!.display = "block";
+                      window.document.getElementById("bottom-btn").style!.display = "block";
+                    }, 1000);
+                  })
+                //平面地图导航
+                if(Exhibits.assembleData["lobby"][0].teleportMap ==true){
+                  $(".map-btn").show();
+                } else $(".map-btn").hide();
+                //获取个人账号json，拿到拼接style和step
+                axios
+                  .get("https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/"
+                    + Exhibits.assembleData["lobby"][0].creatAccount + "projects.json" + "?" + Date.now())
+                  .then((res) => {
+                    res.data.filter((it) => {
+                      if (it.id == VeryNettyPara.ProjectID) {
+                        Game.step = it.step;
+                        Game.style = it.style;
+                        if (Game.style == "kongzifeng") {
+                          Game.diyStyleName = "kongzifengdiy";
+                        } else Game.diyStyleName = "diy"
+                      }
+                    });
+                    
+                  })
+                  //拿到diy.json，获取每个展馆的拼接参数以及url
+                  .then(() => {
+                    return axios.get("https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/"+Game.diyStyleName+".json")
+                  })
+                  .then((res)=>{
+                    Game.diyData = res.data;
+                    axios.get(
+                      "https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibits.json"
+                    ).then((res) => {
+                      let allData = res.data;
+                      allData[Game.style].map((it) => {
+                        Game.diyData[it.name].url = it.thumbnail;
+                      });
+        
+                      //展馆拼接信息例如P/D/Rec等组成的Array
+                      //assemble
+                      Game.picCanvas = window.document.getElementById("tepCanvas");
+                      Game.ctx = Game.picCanvas.getContext("2d");
+                      Game.picCanvas.width = Game.width;
+                      Game.picCanvas.height = Game.height;
+                      Game.ctx.fillStyle = "#0B0B0B";
+                      Game.ctx.fillRect(0, 0, Game.width, Game.height);
+                      Game.ctx.save();
+        
+                      Game.lobby("A", 1);
+                      Game.exhibitsAssemble();
+                      
+                      var gameScene = that._scene;
+                      (Game.picCanvas as HTMLCanvasElement).addEventListener("click",(e)=>{
+                        var x = e.pageX - Game.picCanvas.getBoundingClientRect().left;
+                        var y = e.pageY - Game.picCanvas.getBoundingClientRect().top;
+                        //点击触发
+                        Game.stepArray.forEach((element)=>{
+                          const pos = new BABYLON.Vector3(Exhibits.assembleData['lobby'][0].position[0], Exhibits.assembleData['lobby'][0].position[1], Exhibits.assembleData['lobby'][0].position[2]);
+                          const rot = new BABYLON.Vector3(Exhibits.assembleData['lobby'][0].rotation[0], Exhibits.assembleData['lobby'][0].rotation[1], Exhibits.assembleData['lobby'][0].rotation[2]);
+                          let minX = Math.min.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
+                          let maxX = Math.max.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
+                          let minY = Math.min.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
+                          let maxY = Math.max.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
+                          if(x >= minX && x<= maxX && y>=minY && y<=maxY){
+                            Game.teleport(pos,rot,element,gameScene,Game.rangeArray[element][2][0],Game.rangeArray[element][2][1]);
+                          }
+                        })
+                      })
+                    });
+                  })
+        
+                //判断是否拼接成loop
+                if(Exhibits.assembleData['exhibits']){
+                  if (!Game.isLoop(Game._ports2[0], Game._ports2[Game._ports2.length - 1])) {
+                    let door1 = that._scene.getMeshByName('men_002');
+                    if (door1) {
+                      door1.visibility = 1
+                    }
+                    let port = Game._ports2[Game._ports2.length - 1];
+                    let doorName = port.name[0]+"men_00"+port.name[port.name.length-1];
+                    let door2 = that._scene.getMeshByName(doorName);
+                    if (door2) {
+                      door2.visibility = 1
+                    }
+                  } else {
+                    let door3 = that._scene.getMeshByName('men_002');
+                    if (door3) {
+                      door3.dispose();
+                    }
+                  }
+                }
+                Question._doorNumbers = Question._doors.length;
+                Question.singleScore = Math.round(100 / Question._doorNumbers);
+                GlobalControl.audio.initTrigger();
+                
+                if(SocketManager.isPTP){
+                  window.document.getElementById("oldMessage").style!.display = "block";
+                  window.document.getElementById("messagePar").style!.display = "block";
+                }
+                that._scene.onReadyObservable.remove(observor);
+              });
 
               // 加载过度动画关
             },
@@ -383,9 +614,7 @@ export class Game {
       var newPos = that._scene.getMeshByName(parentName).setAbsolutePosition(new BABYLON.Vector3(posX - xDif, posY - yDif, posZ - zDif));
       //更换拼接的门
       Game._ports = [];
-      let nextDoor = that._scene.getMeshByName(
-        that._exhibits[i].index + that._exhibits[i].door2
-      );
+      let nextDoor = that._scene.getMeshByName(that._exhibits[i].index + that._exhibits[i].door2);
       Game._ports.push(nextDoor);
 
       //删除多余的门和锁
@@ -423,29 +652,15 @@ export class Game {
 
       //背景音乐和解说词添加
       if (that._exhibits[i].bgMusic !== "") {
-        let bg = new BABYLON.Sound(
-          "bgMusic" + that._exhibits[i].index,
-          that._exhibits[i].bgMusic,
-          that._scene,
-          null,
-          { loop: true, autoplay: false }
-        );
+        let bg = new BABYLON.Sound("bgMusic" + that._exhibits[i].index,that._exhibits[i].bgMusic,that._scene,null,{ loop: true, autoplay: false });
         AudioControl._bgMusicList[that._exhibits[i].index] = bg;
       }
       if (that._exhibits[i].descant !== "") {
-        let des = new BABYLON.Sound(
-          "descant" + that._exhibits[i].index,
-          that._exhibits[i].descant,
-          that._scene,
-          null,
-          { loop: false, autoplay: false }
-        );
+        let des = new BABYLON.Sound("descant" + that._exhibits[i].index,that._exhibits[i].descant,that._scene,null,{ loop: false, autoplay: false });
         AudioControl._descantList[that._exhibits[i].index] = des;
       }
       if (that._scene.getMeshByName(that._exhibits[i].index + "透明门1"))
-        AudioControl._bgMusicDoors[
-          that._exhibits[i].index
-        ] = that._scene.getMeshByName(that._exhibits[i].index + "透明门1");
+        AudioControl._bgMusicDoors[that._exhibits[i].index] = that._scene.getMeshByName(that._exhibits[i].index + "透明门1");
     };
     meshTask.onError = function (task, message, exception) {
       console.log(message, exception);
@@ -455,237 +670,16 @@ export class Game {
         that.exhibitLoad(i + 1);
       }
       if (i + 1 == that._exhibits.length) {
-        Question._doorNumbers = Question._doors.length;
-        Question.singleScore = Math.round(100 / Question._doorNumbers);
-        GlobalControl.audio.initTrigger();
-        Game.diyMeshList = {
-          reflection: [] as BABYLON.AbstractMesh[],
-          video: [] as BABYLON.AbstractMesh[],
-          model: [] as BABYLON.AbstractMesh[],
-          hua: [] as BABYLON.AbstractMesh[],
-          title: [] as BABYLON.AbstractMesh[],
-          texture: [] as BABYLON.AbstractMesh[],
-        };
-        that._scene.meshes.forEach((value) => {
-          if (value.name.indexOf("reflection") !== -1) {
-            Game.diyMeshList["reflection"].push(value);
-          } else if (value.name.indexOf("视频") !== -1) {
-            Game.diyMeshList["video"].push(value);
-          } else if (value.name.indexOf("m_") !== -1) {
-            Game.diyMeshList["model"].push(value);
-          } else if (value.name.indexOf("hua_") !== -1) {
-            Game.diyMeshList["hua"].push(value);
-          } else if (value.name.indexOf("title") !== -1) {
-            Game.diyMeshList["title"].push(value);
-          } else if (value.name.indexOf("t_") !== -1) {
-            Game.diyMeshList["texture"].push(value);
-          } else {
-            return;
-          }
-        });
-
-        if (JSON.stringify(Game.picData) == "{}") {
-          Game.diyMeshList["hua"].map((it) => {
-            let prefix = /.*(?=_)/g.exec(it.name)[0];
-            let suffix = +/(?<=_).*/g.exec(it.name)[0];
-            if (!Game.picData[prefix]) {
-              Game.picData[prefix] = [];
-            }
-            Game.picData[prefix][suffix - 1] = {
-              name: it.name,
-              url: "./pic/pic.jpg",
-              title: "第" + suffix + "幅",
-              index: suffix,
-            };
-          });
-          // console.log("我是picdata");
-          // console.log(Game.picData);
-        }
-        //model
-        //加载外部模型
-
-        if (Game.modelData) {
-          for (var key in Game.modelData) {
-            GlobalControl.exhibits.modelLoad(
-              key,
-              Game.modelData[key].File,
-              Game.modelData[key].fileName,
-              Game.modelData[key].scale,
-              Game.modelData[key].rotation,
-              Game.modelData[key].x,
-              Game.modelData[key].y,
-              Game.modelData[key].z
-            );
-          }
-        }
-        //反射
-        let _data: any;
-        axios
-          .get("./assemble/A/exhibitbase.json")
-          .then((res) => {
-            _data = res.data;
-            Game.fontData = _data["definedTitle"];
-          })
-          .then(() => {
-            if (JSON.stringify(Game.reflectionData) == "{}") {
-              // console.log(_data);
-              let exhibitsArray = Exhibits.assembleData.exhibits.map((it) => {
-                return it.fileName.substr(0, 1) + "-ground";
-              });
-              exhibitsArray = ["A-ground", ...exhibitsArray];
-              exhibitsArray = Array.from(new Set(exhibitsArray));
-              // console.log(exhibitsArray);
-              Game.reflectionData = {};
-              for (let key of exhibitsArray) {
-                Game.reflectionData[key] = {};
-                Game.reflectionData[key]["des"] =
-                  _data["reflection"][key]["des"];
-                Game.reflectionData[key]["isGround"] =
-                  _data["reflection"][key]["isGround"];
-                Game.reflectionData[key]["open"] =
-                  _data["reflection"][key]["open"];
-                Game.reflectionData[key]["level"] =
-                  _data["reflection"][key]["level"];
-                Game.reflectionData[key]["visibility"] =
-                  _data["reflection"][key]["visibility"];
-              }
-              // console.log(Game.reflectionData);
-              for (var key in Game.reflectionData) {
-                Game.reflectionFunc(
-                  key,
-                  Game.reflectionData[key].open,
-                  Game.reflectionData[key].level,
-                  Game.reflectionData[key].visibility,
-                  Game.reflectionData[key].isGround,
-                  that._scene
-                );
-              }
-            } else {
-              for (var key in Game.reflectionData) {
-                Game.reflectionFunc(
-                  key,
-                  Game.reflectionData[key].open,
-                  Game.reflectionData[key].level,
-                  Game.reflectionData[key].visibility,
-                  Game.reflectionData[key].isGround,
-                  that._scene
-                );
-              }
-            }
-          });
-        //平面地图导航
-        if(Exhibits.assembleData["lobby"][0].teleportMap ==true){
-          $(".map-btn").show();
-        } else $(".map-btn").hide();
-        //获取个人账号json，拿到拼接style和step
-        axios
-          .get("https://"+Game.bucket+".oss-cn-hangzhou.aliyuncs.com/museumeditor/data/"
-            + Exhibits.assembleData["lobby"][0].creatAccount + "projects.json" + "?" + Date.now())
-          .then((res) => {
-            res.data.filter((it) => {
-              if (it.id == VeryNettyPara.ProjectID) {
-                console.log(it)
-                Game.step = it.step;
-                Game.style = it.style;
-                if (Game.style == "kongzifeng") {
-                  Game.diyStyleName = "kongzifengdiy";
-                } else Game.diyStyleName = "diy"
-              }
-            });
-          })
-          //拿到diy.json，获取每个展馆的拼接参数以及url
-          .then(() => {
-            return axios.get("https://"+Game.bucket+".oss-cn-hangzhou.aliyuncs.com/museumeditor/data/"+Game.diyStyleName+".json")
-          })
-          .then((res)=>{
-            Game.diyData = res.data;
-            axios.get(
-              "https://"+Game.bucket+".oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibits.json"
-            ).then((res) => {
-              let allData = res.data;
-              allData[Game.style].map((it) => {
-                Game.diyData[it.name].url = it.thumbnail;
-              });
-
-              //展馆拼接信息例如P/D/Rec等组成的Array
-              //assemble
-              Game.picCanvas = window.document.getElementById("tepCanvas");
-              Game.ctx = Game.picCanvas.getContext("2d");
-              Game.picCanvas.width = Game.width;
-              Game.picCanvas.height = Game.height;
-              Game.ctx.fillStyle = "#0B0B0B";
-              Game.ctx.fillRect(0, 0, this.width, this.height);
-              Game.ctx.save();
-
-              Game.lobby("A", 1);
-              Game.exhibitsAssemble();
-
-              
-              var gameScene = that._scene;
-              (Game.picCanvas as HTMLCanvasElement).addEventListener("click",(e)=>{
-                var x = e.pageX - Game.picCanvas.getBoundingClientRect().left;
-                var y = e.pageY - Game.picCanvas.getBoundingClientRect().top;
-                //点击触发
-                Game.stepArray.forEach((element)=>{
-                  const pos = new BABYLON.Vector3(Exhibits.assembleData['lobby'][0].position[0], Exhibits.assembleData['lobby'][0].position[1], Exhibits.assembleData['lobby'][0].position[2]);
-                  const rot = new BABYLON.Vector3(Exhibits.assembleData['lobby'][0].rotation[0], Exhibits.assembleData['lobby'][0].rotation[1], Exhibits.assembleData['lobby'][0].rotation[2]);
-                  let minX = Math.min.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
-                  let maxX = Math.max.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
-                  let minY = Math.min.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
-                  let maxY = Math.max.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
-                  if(x >= minX && x<= maxX && y>=minY && y<=maxY){
-                    Game.teleport(pos,rot,element,gameScene,Game.rangeArray[element][2][0],Game.rangeArray[element][2][1]);
-                  }
-                })
-              })
-            });
-          })
       }
-    });
-    let observor = that._scene.onReadyObservable.addOnce(() => {
-      Game._finishLoaded = true;
-      Game._isAssemble = false;
-      window.document.getElementById("id-progress2")!.innerHTML =
-        "loading...100%";
-      setTimeout(() => {
-        CustomLoadingScreen.loadingScreenDiv!.style.display = "none";
-        window.document.getElementById("menu").style!.display = "block";
-        window.document.getElementById("bottom-btn").style!.display = "block";
-
-        //判断是否拼接成loop
-        if (!Game.isLoop(Game._ports2[0], Game._ports2[Game._ports2.length - 1])) {
-          let door1 = that._scene.getMeshByName('men_002');
-          if (door1) {
-            door1.visibility = 1
-          }
-          let port = Game._ports2[Game._ports2.length - 1];
-          let doorName = port.name[0]+"men_00"+port.name[port.name.length-1];
-          let door2 = that._scene.getMeshByName(doorName);
-          if (door2) {
-            door2.visibility = 1
-          }
-        } else {
-          let door3 = that._scene.getMeshByName('men_002');
-          if (door3) {
-            door3.dispose();
-          }
-        }
-
-        if(SocketManager.isPTP){
-          window.document.getElementById("oldMessage").style!.display = "block";
-          window.document.getElementById("messagePar").style!.display = "block";
-        }
-      }, 1000);
-      that._scene.onReadyObservable.remove(observor);
     });
     assetsManager.load();
   }
 
   public static isLoop(port1: BABYLON.AbstractMesh, port2: BABYLON.AbstractMesh): boolean {
-    var xDif = port1.getAbsolutePosition().clone().x - port2.getAbsolutePosition().clone().x;
-    var zDif = port1.getAbsolutePosition().clone().z - port2.getAbsolutePosition().clone().z;
+    let xDif = port1.getAbsolutePosition().clone().x - port2.getAbsolutePosition().clone().x;
+    let zDif = port1.getAbsolutePosition().clone().z - port2.getAbsolutePosition().clone().z;
 
-    var dis = Math.pow((Math.pow(xDif, 2) + Math.pow(zDif, 2)), 1 / 2);
+    let dis = Math.pow((Math.pow(xDif, 2) + Math.pow(zDif, 2)), 1 / 2);
     if (Math.abs(dis) > 10) {
       return false
     } else return true
@@ -746,7 +740,7 @@ export class Game {
   public static lobby(exhibit: string, door: number) {
     let img = new Image();
     let path:string[] = Game.diyData[exhibit].url.split(/\//g);
-    Game.diyData[exhibit].url="https://"+Game.bucket+".oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibitsimg/"+Game.style+"/"+path[path.length-1];
+    Game.diyData[exhibit].url="https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibitsimg/"+Game.style+"/"+path[path.length-1];
     img.src = Game.diyData[exhibit].url;
     let temp0 =
       door == 1 ? Game.diyData[exhibit].D1 : Game.diyData[exhibit].D2;
@@ -786,7 +780,7 @@ export class Game {
     //exhibit为展厅的名字，string，例如“A”或“B”；door是展厅拼接的门，门1或者门2，number，例如 1或2
     let img1 = new Image();
     let path:string[] = Game.diyData[exhibit].url.split(/\//g);
-    Game.diyData[exhibit].url="https://"+Game.bucket+".oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibitsimg/"+Game.style+"/"+path[path.length-1];
+    Game.diyData[exhibit].url="https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibitsimg/"+Game.style+"/"+path[path.length-1];
     img1.src = Game.diyData[exhibit].url;
     //Rec
     let Rec = Game.diyData[exhibit].Rec
@@ -886,12 +880,7 @@ export class Game {
 
         if (open) {
           if (isGround) {
-            let mMaterial = new BABYLON.MirrorTexture(
-              "mirror",
-              1024,
-              scene,
-              true
-            );
+            let mMaterial = new BABYLON.MirrorTexture("mirror",1024,scene,true);
             (<BABYLON.StandardMaterial>material).reflectionTexture = mMaterial;
             mMaterial.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, 5.86);
             mMaterial.renderList = scene.meshes;
@@ -900,11 +889,7 @@ export class Game {
             key.material = material;
             key.visibility = visibility;
           } else {
-            var probe = new BABYLON.ReflectionProbe(
-              "satelliteProbe" + key.name,
-              512,
-              scene
-            );
+            var probe = new BABYLON.ReflectionProbe("satelliteProbe" + key.name,512,scene);
             for (var index = 0; index < scene.meshes.length; index++) {
               probe.renderList.push(scene.meshes[index]);
             }

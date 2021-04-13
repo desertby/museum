@@ -482,7 +482,7 @@ export class uiBtnEvent {
   //设置cookie
   private closeall() {
     $(
-      ".operating-instructions-box,#bg,#tepCanvas,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-model,.diy-model-model,.diy-material"
+      ".operating-instructions-box,#bg,#tepCanvas,.profile-box,.login-box,.register-box,.Reregister-box,.cardcase-box,.share-box,.profile-edit,.board-box,.diy-bgm,.diy-des,.diy-common,.diy-big,.diy-pic,.diy-pic-link,.diy-pic-video,.diy-pic-model,.diy-pic-360-link,.diy-album,.diy-album-add-box,.diy-pic-pdf,.diy-video,.diy-tietu,.diy-question,.diy-exhibitLink,.diy-model,.diy-model-model,.diy-material"
     ).hide();
     $("#bg").show()
   }
