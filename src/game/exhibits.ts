@@ -19,9 +19,10 @@ import { AudioControl } from "./audioControl";
 import { reloadnum } from "../main";
 import OSS from "ali-oss";
 import { off } from "process";
-import {userLogin,registerCaptcha,userRegister,userReregister,userFindpwd,BindPersonTag,queryPersonTag} from "./veryNetty/user";
+import {userLogin,registerCaptcha,userRegister,userReregister,userFindpwd,BindPersonTag,queryPersonTag,hasLogin,signout} from "./veryNetty/user";
 import { VeryCharacter } from "./veryNetty/VeryCharacter";
 const AColorPicker = require("a-color-picker");
+import { tex_create } from "./360create"
 
 export class Exhibits {
   private _canvas: HTMLCanvasElement;
@@ -124,6 +125,17 @@ export class Exhibits {
   public static profileArray:string[] = [];
   public static loginData:any = [];
   public static findTag:any = [];
+  public static isCommentAvailable:boolean = true;
+
+  private isForwardBtnDwn:boolean = false;
+  private isBackwardBtnDwn:boolean = false;
+  private isLeftBtnDwn:boolean = false;
+  private isRightBtnDwn:boolean = false;
+  public static grid: BABYLON.GUI.Grid;
+  public static forwardBtn:BABYLON.GUI.Button;
+  public static backBtn:BABYLON.GUI.Button;
+  public static leftBtn:BABYLON.GUI.Button;
+  public static rightBtn:BABYLON.GUI.Button;
 
   public run3(): void {
     //根据项目id和个人id，获取个人信息，用于展示个人页面
@@ -167,7 +179,7 @@ export class Exhibits {
           ).hide();
           $("#bg").show();
           const ulBtnNode = $(
-            ".share-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
+            ".share-btn,.support-btn,.resume-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
           );
           ulBtnNode.removeClass("btn-selected");
           //update resume-box
@@ -280,35 +292,46 @@ export class Exhibits {
       );
     }
   }
+
+  //更新显示profile页面
   public editProfile(): void {
     if (this.profile.value) {
-      if (this.loginUserId.search("@") === -1) {
-        $(".profile-phone").val(this.loginUserId).attr("disabled", "disabled");
-      } else {
-        $(".profile-email").val(this.loginUserId).attr("disabled", "disabled");
-      }
-
       Exhibits.profileArray = this.profile.value.split(",");
       console.log(Exhibits.profileArray)
       let lang = parseInt(this.getCookie("language"));
-      $(".profile-box-name").text(Exhibits.profileArray[0]);
+      $("#profile-box-name").text(Exhibits.profileArray[0]);
       VeryNettyPara.UserName = Exhibits.profileArray[0];
-      if (Exhibits.profileArray[1] === "f") {
-        $("profile-box-sex").toggleClass("icon-nan");
-        $("profile-box-sex").toggleClass("icon-nv");
+      $("#profile-box-account").text(Exhibits.profileArray[2]);
+      //性别显示
+      if (Exhibits.profileArray[1] === "m") {
+          $(".icon--nan").css({
+            'display': 'none'
+          });
+          $(".icon--nv").css({
+            'display': 'inline-block'
+          })
+        }else{
+          $(".icon--nv").css({
+            'display': 'none'
+          });
+          $(".icon--nan").css({
+            'display': 'inline-block'
+          })
       }
-      $(".profile-box-edit-text").text(lang === 0 ? "修改资料" : "Edit");
-      $(".profile-box-email-text").text(Exhibits.profileArray[3]);
-      $(".profile-box-company-text").text(Exhibits.profileArray[4]);
-      $(".profile-box-position-text").text(Exhibits.profileArray[5]);
-      $(".profile-box-phone-text").text(Exhibits.profileArray[2]);
-    } else {
-      //
-      // $(".profile").show();
-
+      //单位
+      if(Exhibits.profileArray[3] && Exhibits.profileArray[3] !==""&& Exhibits.profileArray[3] !==undefined){
+        $("#profile-box-unit").val(Exhibits.profileArray[3]);
+      }
+      //title
+      if(Exhibits.profileArray[4] && Exhibits.profileArray[4] !==""&& Exhibits.profileArray[4] !==undefined){
+        $("#profile-box-title").val(Exhibits.profileArray[4]);
+      }
     }
   }
-  public constructor(scene: BABYLON.Scene, canvas: HTMLCanvasElement) {
+
+  public constructor(scene: BABYLON.Scene, canvas: HTMLCanvasElement,engine:BABYLON.Engine) {
+    //创建360全景照片
+    let creat360Photo = new  tex_create(engine,scene);
     //加载language cookie
     var user = this.getCookie("language");
     if (user != "" && user != null) {
@@ -323,11 +346,13 @@ export class Exhibits {
         let posY = that._scene.getMeshByName("角色").absolutePosition.y;
         let posZ = that._scene.getMeshByName("角色").absolutePosition.z;
         Exhibits.assembleData.lobby[0].position = [posX, posY, posZ];
+        // creat360Photo.set_position(that._scene.getMeshByName("角色").absolutePosition,engine,that._scene);
       } else {
         let posX = (that._scene.activeCamera as BABYLON.UniversalCamera).position.x;
         let posY = (that._scene.activeCamera as BABYLON.UniversalCamera).position.y;
         let posZ = (that._scene.activeCamera as BABYLON.UniversalCamera).position.z;
         Exhibits.assembleData.lobby[0].position = [posX, posY, posZ];
+        // creat360Photo.set_position((that._scene.activeCamera as BABYLON.UniversalCamera).position,engine,that._scene);
       }
 
       let rotX = (that._scene.activeCamera as BABYLON.UniversalCamera).rotation.x;
@@ -345,6 +370,98 @@ export class Exhibits {
           that.removeallbg();
         })
     })
+    //方向按键
+    Exhibits.grid = new BABYLON.GUI.Grid("screen-cameraMove");
+    Exhibits.grid.isVisible = false;
+    UIMain.advancedTexture.addControl(Exhibits.grid);
+    Exhibits.grid.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    Exhibits.grid.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    Exhibits.grid.width = "342px";
+    Exhibits.grid.height = "228px";
+    Exhibits.grid.top = "-48px";
+    Exhibits.grid.addRowDefinition(0.2);
+    Exhibits.grid.addRowDefinition(0.2);
+    UIMain.advancedTexture.addControl(Exhibits.grid);
+
+    var newGrid = new BABYLON.GUI.Grid();
+    newGrid.addColumnDefinition(0.5);
+    newGrid.addColumnDefinition(0.5);
+    newGrid.addColumnDefinition(0.5);
+    Exhibits.grid.addControl(newGrid, 1, 0);
+
+    Exhibits.forwardBtn = BABYLON.GUI.Button.CreateImageOnlyButton("forward", "images/system/forward.png");
+    Exhibits.forwardBtn.width = 0.333;
+    Exhibits.forwardBtn.height = 1;
+    Exhibits.forwardBtn.thickness = 0;
+    Exhibits.grid.addControl(Exhibits.forwardBtn, 0, 0);
+
+    Exhibits.forwardBtn.onPointerDownObservable.add(() => {
+      this.isForwardBtnDwn = true;
+    });
+    Exhibits.forwardBtn.onPointerUpObservable.add(() => {
+      this.isForwardBtnDwn = false;
+    });
+
+    Exhibits.backBtn = BABYLON.GUI.Button.CreateImageOnlyButton("back", "images/system/back.png");
+    Exhibits.backBtn.width = 1;
+    Exhibits.backBtn.height = 1;
+    Exhibits.backBtn.thickness = 0;
+    newGrid.addControl(Exhibits.backBtn, 0, 1);
+
+    Exhibits.backBtn.onPointerDownObservable.add(() => {
+      this.isBackwardBtnDwn = true;
+    });
+    Exhibits.backBtn.onPointerUpObservable.add(() => {
+      this.isBackwardBtnDwn = false;
+    });
+
+    Exhibits.leftBtn = BABYLON.GUI.Button.CreateImageOnlyButton("left", "images/system/left.png");
+    Exhibits.leftBtn.width = 1;
+    Exhibits.leftBtn.height = 1;
+    Exhibits.leftBtn.thickness = 0;
+    newGrid.addControl(Exhibits.leftBtn, 0, 0);
+
+    Exhibits.leftBtn.onPointerDownObservable.add(() => {
+      this.isLeftBtnDwn = true;
+    });
+    Exhibits.leftBtn.onPointerUpObservable.add(() => {
+      this.isLeftBtnDwn = false;
+    });
+
+    Exhibits.rightBtn = BABYLON.GUI.Button.CreateImageOnlyButton("right", "images/system/right.png");
+    Exhibits.rightBtn.width = 1;
+    Exhibits.rightBtn.height = 1;
+    Exhibits.rightBtn.thickness = 0;
+    newGrid.addControl(Exhibits.rightBtn, 0, 2);
+
+    Exhibits.rightBtn.onPointerDownObservable.add(() => {
+      this.isRightBtnDwn = true;
+    });
+    Exhibits.rightBtn.onPointerUpObservable.add(() => {
+      this.isRightBtnDwn = false;
+    });
+
+    let _forwardValue: number = 1;
+    let _backValue: number = 1;
+    let _leftValue: number = 1;
+    let _rightValue: number = 1;
+
+    scene.onBeforeRenderObservable.add(() => {
+      if(!Exhibits.assembleData.lobby[0].PTP){
+        if (this.isForwardBtnDwn) {
+          (this._scene.activeCamera as BABYLON.UniversalCamera).cameraDirection.addInPlace((this._scene.activeCamera as BABYLON.UniversalCamera).getDirection(BABYLON.Vector3.Forward()).scale(_forwardValue));
+        }
+        if (this.isBackwardBtnDwn) {
+          (this._scene.activeCamera as BABYLON.UniversalCamera).cameraDirection.addInPlace((this._scene.activeCamera as BABYLON.UniversalCamera).getDirection(BABYLON.Vector3.Backward()).scale(_backValue));
+        }
+        if (this.isRightBtnDwn) {
+          (this._scene.activeCamera as BABYLON.UniversalCamera).cameraDirection.addInPlace((this._scene.activeCamera as BABYLON.UniversalCamera).getDirection(BABYLON.Vector3.Right()).scale(_leftValue));
+        }
+        if (this.isLeftBtnDwn) {
+          (this._scene.activeCamera as BABYLON.UniversalCamera).cameraDirection.addInPlace((this._scene.activeCamera as BABYLON.UniversalCamera).getDirection(BABYLON.Vector3.Left().scale(_rightValue)));
+        }
+      }
+    });
 
     //login界面
     $(".login-btn").on("click", () => {
@@ -396,7 +513,7 @@ export class Exhibits {
             if (data.code === "00000") {
               let findTag = data.data;
               if (findTag.length > 0) {
-                that.profile.value = findTag[0];
+                that.profile.value = findTag[findTag.length-1];
                 //根据项目id和个人id存储数据
                 SocketManager.Instance.SaveValues([that.profile], true, 123);
               } else {
@@ -585,6 +702,54 @@ export class Exhibits {
         });
     });
 
+    $(".profile-box-signout").on("click", () => {
+
+    })
+    //update profile
+    $(".profile-box-confirm").on("click", () => {
+      //获取当前信息
+      let tagResult = [];
+      let userName = Exhibits.profileArray[0];
+      let account = Exhibits.profileArray[2];
+      let gender:any;
+      if($("input[name='gender']:checked").val() === undefined){
+        gender = "m";
+      } else {
+        gender = $("input[name='gender']:checked").val();
+      }
+      let company = $("#profile-box-unit").val();
+      let title = $("#profile-box-title").val();
+      let result = [userName,gender,account,company,title].join(',');
+      tagResult.push(result);
+      
+      //保存上传
+      queryPersonTag({ softwareId: "qiTestTag" }).then(function (response) {
+        let data = response.data;
+            if (data.code === "00000") {
+              BindPersonTag({tagName: tagResult[0],softwareId: "qiTestTag"});
+              that.profile.value = tagResult[0];
+              SocketManager.Instance.SaveValues([that.profile], true, 123);
+            }
+      })
+      .then(()=>{
+        $(".system-success-text").text("修改信息成功");
+        $(".profile-box").hide(150, "linear");
+        $("#bg").hide();
+        that.removeallbg();
+        $(".system-success").show().delay(500).hide(300);
+      })
+    })
+
+    //update password
+    $(".profile-box-forget-password").on("click", () => {
+      //消息清空
+      $(".Reregister-box :text").each(function () {
+        $(this).val("")
+      });
+      $(".profile-box").hide();
+      $(".Reregister-box").show();
+    })
+
     this._scene = scene;
     this._canvas = canvas;
 
@@ -672,9 +837,84 @@ export class Exhibits {
       }
     });
 
+    //记住密码登录
+    if (window.sessionStorage.getItem(window.location.href) !== null) {
+      window.sessionStorage.removeItem(window.location.href)
+      hasLogin({}).then(function (response) {
+        let data = response.data;
+        if (data.code === "00000") {
+          // 登录成功
+          Exhibits.loginData = data.data;
+          Exhibits.hasLogin = true;
+          VeryNettyPara.haslogin = true;
+          VeryNettyPara.UserName = data.data.userName;
+          VeryNettyPara.UserID = data.data.phone;
+          that.loginUserId = VeryNettyPara.UserID;
+          that._doorscopy = [...Question._doors];
+
+          (that._scene.activeCamera as BABYLON.UniversalCamera).speed = 10;
+          (that._scene.activeCamera as BABYLON.UniversalCamera).inputs.attached.mouse.attachControl(that._canvas);
+
+          SocketManager.Instance.OperateNum(that.onlineNumber, "+", 369, () => { });
+          SocketManager.Instance.ValTimeStart("test", () => { });
+
+          //名片和权限处理
+          if (data.data.tags && (data.data.tags).indexOf("diy") !== -1) {
+            $(".setup-btn").css("display", "inline-block");
+          }
+        }
+      })
+        .then(() => {
+          queryPersonTag({ softwareId: "qiTestTag" }).then(function (response) {
+            let data = response.data;
+            if (data.code === "00000") {
+              let findTag = data.data;
+              if (findTag.length > 0) {
+                that.profile.value = findTag[findTag.length - 1];
+                //根据项目id和个人id存储数据
+                SocketManager.Instance.SaveValues([that.profile], true, 123);
+              } else {
+                if (Exhibits.loginData.tags) {
+                  let tagResult = [];
+                  Exhibits.loginData.tags.forEach((element) => {
+                    if (
+                      element.search(Exhibits.loginData.userName) !== -1
+                    ) {
+                      tagResult.push(element);
+                    }
+                  });
+                  console.log(tagResult);
+                  if (tagResult.length > 0) {
+                    //原先账号中存储了信息，切换到固定软件id，绑定个人信息
+                    BindPersonTag({ tagName: tagResult[0], softwareId: "qiTestTag" });
+                    that.profile.value = tagResult[0];
+                    SocketManager.Instance.SaveValues([that.profile], true, 123);
+                  } else {
+                    //原先账号中没有存储信息,切换到固定软件id，绑定个人信息
+                    let tags = Exhibits.loginData.userName + ",m" + "," + Exhibits.loginData.phone;
+                    console.log(tags);
+                    BindPersonTag({ tagName: tags, softwareId: "qiTestTag" });
+                    that.profile.value = tags;
+                    SocketManager.Instance.SaveValues([that.profile], true, 123);
+                  }
+                }
+              }
+            }
+          })
+        })
+        .then(() => {
+          that.run3();
+        })
+        .catch(function (error) {
+          window.alert("登录超时，服务器未响应");
+          console.log(error);
+        });
+    }
+    
+    
     //初始界面出现login界面
     this._scene.onPointerObservable.add((pInfo) => {
-      if (this._initScreen == 0 &&reloadnum == 0 &&pInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+      if (this._initScreen == 0 &&reloadnum == 0 &&pInfo.type === BABYLON.PointerEventTypes.POINTERDOWN && !Exhibits.hasLogin) {
         this._initScreen = 1;
         $(".login-box").toggle(200);
         BABYLON.Engine.audioEngine.unlock();
@@ -682,6 +922,7 @@ export class Exhibits {
         $(".login-box").toggle(200);
       }
     });
+    //图集关闭
     this._scene.onPointerObservable.add((info) => {
       if (info.type === BABYLON.PointerEventTypes.POINTERDOWN &&info.event.button === 0) {
         if (this.picParent !== null) {
@@ -1325,6 +1566,7 @@ export class Exhibits {
     operationContainer.width = "100%";
     operationContainer.height = "120px";
     operationContainer.paddingLeft = "50px";
+    operationContainer.isVisible = Exhibits.isCommentAvailable;
     composePanel.addControl(operationContainer);
 
     // 评论图片标志
@@ -1647,6 +1889,7 @@ export class Exhibits {
     commentRect.width = "100%";
     commentRect.height = "580px";
     commentRect.paddingLeft = "50px";
+    commentRect.isVisible = Exhibits.isCommentAvailable;
     composePanel.addControl(commentRect);
     // 精彩评论
     let goodComment = new BABYLON.GUI.TextBlock("comment-good");
@@ -2540,14 +2783,7 @@ export class Exhibits {
   // DIY相关
   //视频编辑
   public diyVideoPlane(btnExhibitName) {
-    $("#diy-video-prev-view").attr(
-      "src",
-      "./video/" +
-        btnExhibitName +
-        ".mp4" +
-        "?" +
-        ((Math.random() * 10000) >> 0)
-    );
+    $("#diy-video-prev-view").attr("src","./video/" +btnExhibitName +".mp4" +"?" +((Math.random() * 10000) >> 0));
     $(".diy-video").show();
     // 修改视频
     // 上传视频
@@ -2712,16 +2948,9 @@ export class Exhibits {
   //贴图编辑
   public diyTietuPlane(btnExhibitName) {
     this.getHouse(btnExhibitName, () => {
-      $("#diy-tietu-prev-view").attr(
-        "src",
-        "." +
-          this.house +
-          "t_" +
-          btnExhibitName.replace(/.*(!?\_)/g, "") +
-          ".jpg" +
-          "?" +
-          ((Math.random() * 10000) >> 0)
-      );
+      console.log(btnExhibitName,this.house,this.houseLetter)
+      $("#diy-tietu-prev-view").attr("src",
+        "." +this.house +this.houseLetter+"t_" +btnExhibitName.replace(/.*(!?\_)/g, "") +".jpg" +"?" +((Math.random() * 10000) >> 0));
     });
     $(".diy-tietu").show();
 
@@ -2729,22 +2958,10 @@ export class Exhibits {
     $(".diy-tietu-add-btn")
       .off("click")
       .click(() => {
-        let filePath =
-          VeryNettyPara.ProjectID +
-          this.house +
-          "t_" +
-          btnExhibitName.replace(/.*(!?\_)/g, "") +
-          ".jpg";
+        let filePath =VeryNettyPara.ProjectID +this.house +this.houseLetter+"t_" +btnExhibitName.replace(/.*(!?\_)/g, "") +".jpg";
         this.uploadFile(this.applyTokenDo(), "diy-tietu-file", filePath, () => {
           setTimeout(() => {
-            let filePath1 =
-              "." +
-              this.house +
-              "t_" +
-              +btnExhibitName.replace(/.*(!?\_)/g, "") +
-              ".jpg" +
-              "?" +
-              Date.now();
+            let filePath1 ="." +this.house +this.houseLetter+"t_" +btnExhibitName.replace(/.*(!?\_)/g, "") +".jpg" +"?" +Date.now();
             axios.get(filePath1).then(() => {
               let mesh = GlobalControl.exhibits._scene.getMeshByName(
                 btnExhibitName
@@ -3034,13 +3251,13 @@ export class Exhibits {
   // 外景编辑
   public diyWaijingPlane() {
     if(Exhibits.assembleData.lobby[0].fileName[0] !== "A") return
-    let filePath = VeryNettyPara.ProjectID + "/assemble/A/全景照片.jpg";
+    let filePath = VeryNettyPara.ProjectID + "/assemble/A00/全景照片.jpg";
     this.uploadFile(this.applyTokenDo(), "diy-waijing-file", filePath, () => {
-      axios.get("./assemble/A/全景照片.jpg").then(() => {
+      axios.get("./assemble/A00/全景照片.jpg").then(() => {
         let mesh = GlobalControl.exhibits._scene.getMeshByName("全景照片");
         mesh.material.getActiveTextures()[0].dispose();
         let newTexture = new BABYLON.Texture(
-          "./assemble/A/全景照片.jpg" + "?" + ((Math.random() * 10000) >> 0),
+          "./assemble/A00/全景照片.jpg" + "?" + ((Math.random() * 10000) >> 0),
           GlobalControl.exhibits._scene
         );
 
@@ -3111,17 +3328,11 @@ export class Exhibits {
           });
       }
       $("#diy-guan-title-fontfamily").on("change", () => {
-        $(".guan-font-example").css(
-          "font-family",
-          $("#diy-guan-title-fontfamily").val() as string
-        );
+        $(".guan-font-example").css("font-family",$("#diy-guan-title-fontfamily").val() as string);
         this.titleFamilyChanged = true;
       });
       $("#diy-guan-title-fontsize").on("change", () => {
-        $(".guan-font-example").css(
-          "font-size",
-          $("#diy-guan-title-fontsize").val() + "px"
-        );
+        $(".guan-font-example").css("font-size",$("#diy-guan-title-fontsize").val() + "px");
         this.titleSizeChanged = true;
       });
 
@@ -3141,16 +3352,11 @@ export class Exhibits {
               this.titleSize = this._fontData[this.houseLetter].bigTitleSize;
             }
             if (this.titleFamilyChanged) {
-              this.titleFamily = $(
-                "#diy-guan-title-fontfamily"
-              ).val() as string;
+              this.titleFamily = $("#diy-guan-title-fontfamily").val() as string;
             } else {
-              this.titleFamily = this._fontData[
-                this.houseLetter
-              ].bigTitleFamily;
+              this.titleFamily = this._fontData[this.houseLetter].bigTitleFamily;
             }
-
-            this.titleReplace(title, btnExhibitName);
+            this.titleReplace(title, btnExhibitName,this.houseLetter);
             $(".diy-big").delay(500).hide();
             $("#bg").hide();
           } else {
@@ -3164,10 +3370,12 @@ export class Exhibits {
       "src",
       "./images/progress/bg.png" + "?" + ((Math.random() * 10000) >> 0)
     );
-    $("#diy-waijing-prev-view").attr(
-      "src",
-      "./assemble/A/全景照片.jpg" + "?" + ((Math.random() * 10000) >> 0)
-    );
+    if(Exhibits.assembleData.lobby[0].fileName[0] == "A"){
+      $("#diy-waijing-prev-view").attr(
+        "src",
+        "./assemble/A00/全景照片.jpg" + "?" + ((Math.random() * 10000) >> 0)
+      );
+    }
 
     $(".diy-hua-title")
       .off("click")
@@ -3281,7 +3489,9 @@ export class Exhibits {
           //screen video button
           this.editButton("视频",50,50,90,"video",this,this.diyVideoPlane);
           //door button
-          this.editDoorButton();
+          if(Exhibits.assembleData["lobby"][0].question !== false){
+            this.editDoorButton();
+          }
           this.diyBGM();
           this.diyDes();
           this.getExhibitData();
@@ -3417,8 +3627,14 @@ export class Exhibits {
   }
   // 展画编辑
   public diyPicPlane(btnExhibitName: string, meshProfile): void {
+    //获取该展画对应贴图名称
+    //需要对修改后的名称进行处理--，删除最后一个斜线前和问号后的内容
+    let mesh = GlobalControl.exhibits._scene.getMeshByName(btnExhibitName);
+    let textureList = mesh.material.getActiveTextures();
+    let temp0 = textureList[0].name;
+    let temp1 = temp0.replace(/.*(!?\/)/g,"");
+    let urlName = temp1.replace(/(?=\?).*/g,"");
     // 初始化diy面板
-
     $("#img-prev-view").attr(
       "src",
       "./pic/" + btnExhibitName + ".jpg" + "?" + ((Math.random() * 10000) >> 0)
@@ -3515,10 +3731,11 @@ export class Exhibits {
               ].smallTitleFamily;
             }
 
-            this.textReplace(this._textdata, (titleName: string) => {
+            console.log(this._textdata)
+            this.textReplace(this._textdata,urlName,num, (titleName: string) => {
               setTimeout(
                 (titleName: string) => {
-                  console.log("刚开始");
+                  console.log("title刚开始");
                   let url2 = "." + this.house + titleName + "?" + Date.now();
                   axios.get(url2).then(() => {
                     console.log(btnExhibitName.replace(/hua/g, "xiaobiaoti"));
@@ -3538,7 +3755,7 @@ export class Exhibits {
                     );
                     newMaterial.diffuseTexture = newTexture;
                     mesh.material = newMaterial;
-                    console.log("changed标题展话");
+                    console.log("changed标题");
                   });
                 },
                 1000,
@@ -3546,9 +3763,10 @@ export class Exhibits {
               );
             });
 
-            this.textureRepalce(this._textdata, num, (picName: string) => {
+            this.textureRepalce(this._textdata,urlName, num, (picName: string) => {
               setTimeout(
                 (picName: string) => {
+                  console.log("pic刚开始");
                   let url2 = "." + this.house + picName + "?" + Date.now();
                   axios.get(url2).then(() => {
                     let mesh = GlobalControl.exhibits._scene.getMeshByName(
@@ -3561,12 +3779,12 @@ export class Exhibits {
                     newTexture.level = 2;
                     let texture = "texture" + Date.now();
                     let newMaterial = new BABYLON.StandardMaterial(
-                      "texture",
+                      texture,
                       GlobalControl.exhibits._scene
                     );
                     newMaterial.diffuseTexture = newTexture;
                     mesh.material = newMaterial;
-                    console.log("changed标题展话");
+                    console.log("changed展画");
                   });
                 },
                 1000,
@@ -3583,21 +3801,16 @@ export class Exhibits {
             index: +btnExhibitName.replace(/.*(!?\_)/g, ""),
           };
           let num = +btnExhibitName.replace(/.*(!?\_)/g, "") - 1;
-          if (
-            this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num] ===
-            undefined
-          ) {
+          console.log(this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")])
+          if (this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")] ===undefined) {
+            this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")] = [];
+          }
+          if(this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num] ===undefined){
             this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num] = {};
           }
-          this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num][
-            "title"
-          ] = para1.title;
-          this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num][
-            "index"
-          ] = para1.index;
-          this._textdata = this._textTitle[
-            btnExhibitName.replace(/(?=\_).*/g, "")
-          ];
+          this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num]["title"] = para1.title;
+          this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")][num]["index"] = para1.index;
+          this._textdata = this._textTitle[btnExhibitName.replace(/(?=\_).*/g, "")];
           // 判断小标题文字属性是否改变，没有的话，就从初始文件读取
 
           if (!this.fontSizeChanged) {
@@ -3609,7 +3822,8 @@ export class Exhibits {
           if (!this.fontFamilyChanged) {
             this.fontFamily = this._fontData[this.houseLetter].smallTitleFamily;
           }
-          this.textReplace(this._textdata, (picName: string) => {
+          console.log(this._textdata)
+          this.textReplace(this._textdata,urlName,num, (picName: string) => {
             setTimeout(
               (picName: string) => {
                 console.log("单独标题" + btnExhibitName);
@@ -4061,8 +4275,7 @@ export class Exhibits {
           alert("必须填写标题");
           return;
         }
-        let fileName = (document.getElementById("album-pic-file") as any)
-          .files[0].name;
+        let fileName = btnExhibitName+(Math.round(Math.random() * 100))+(document.getElementById("album-pic-file") as any).files[0].name;
           console.log(fileName)
         let filePath1 = VeryNettyPara.ProjectID + "/images/highPic/" + fileName;
         let filePath2 = "./images/highPic/" + fileName;
@@ -4187,7 +4400,6 @@ export class Exhibits {
         num = index + 1;
       }
     });
-
     console.log(this._doorscopy)
 
     let house = "house" + num;
@@ -4491,11 +4703,9 @@ export class Exhibits {
     let bb;
     if (jsonName === "exhibits") {
       this._data = GlobalControl.exhibits.json;
-
       bb = JSON.stringify(GlobalControl.exhibits.json);
     } else if (jsonName === "screen-video") {
       GlobalControl.screenVideo._data = GlobalControl.screenVideo._data;
-
       bb = JSON.stringify(GlobalControl.screenVideo._data);
     } else if (jsonName === "highPicture") {
       this._picdata = GlobalControl.exhibits.albumJson;
@@ -4833,96 +5043,70 @@ export class Exhibits {
   }
   private loadTextData(): void {
     let that = this;
-    that._textTitle = Game.picData;
+    that._textTitle = {};
   }
 
-  public initTextData(intro: string): void {
-    //读取json相对应的数据
-    if (this._textTitle[intro]) {
-      this._textdata = [];
-      for (let i: number = 0; i < this._textTitle[intro].length; i++) {
-        let para: TextData = {
-          url: this._textTitle[intro][i].url,
-          title: this._textTitle[intro][i].title,
-          index: this._textTitle[intro][i].index,
-        };
-        this._textdata.push(para);
-      }
-      this.textReplace(this._textdata);
-    }
-  }
+  // public initTextData(intro: string): void {
+  //   //读取json相对应的数据
+  //   if (this._textTitle[intro]) {
+  //     this._textdata = [];
+  //     for (let i: number = 0; i < this._textTitle[intro].length; i++) {
+  //       let para: TextData = {
+  //         url: this._textTitle[intro][i].url,
+  //         title: this._textTitle[intro][i].title,
+  //         index: this._textTitle[intro][i].index,
+  //       };
+  //       this._textdata.push(para);
+  //     }
+  //     this.textReplace(this._textdata);
+  //   }
+  // }
 
   //创建文字插入
   public textReplace(
     exhibit: TextData[],
+    urlName:string,
+    picIndex:number,
     callback?: (titleName: string) => void
   ): void {
-    console.log(exhibit);
-    console.log("标题开始");
     let that = this;
     let txtCanvas = document.createElement("canvas");
     let txtCtx = txtCanvas.getContext("2d");
-    // txtCanvas.style = "border:0px";
     let txtWidth = 1024;
     let txtHeight = 256;
-    let titleName = "10-16名称.png"; //标题16
-    if (exhibit.length > 16) {
+    console.log(urlName)
+    let titleName = urlName.substring(0,6)+"名称.png"; //标题16
+    if (urlName.substring(1,3) !== "10") {
       txtHeight = 640;
-      titleName = "30-40名称.png"; //标题40
     }
 
     txtCanvas.width = txtWidth;
     txtCanvas.height = txtHeight;
 
     let img = new Image();
-    img.src =
-      "." + that.house + titleName + "?" + ((Math.random() * 10000) >>> 0);
+    img.src = "." + that.house + titleName + "?" + ((Math.random() * 10000) >>> 0);
     img.onload = function () {
-      txtCtx.drawImage(
-        img,
-        0,
-        0,
-        img.width,
-        img.height,
-        0,
-        0,
-        txtWidth,
-        txtHeight
-      );
+      txtCtx.drawImage(img,0,0,img.width,img.height,0,0,txtWidth,txtHeight);
       txtCtx.font = that.fontSize + "px" + " " + that.fontFamily;
       txtCtx.fillStyle = that.fontColor;
       console.log(that.fontFamily, that.fontColor);
       let textX;
       let textY;
-
-      for (let i = 0; i < exhibit.length; i++) {
-        if (exhibit[i]) {
-          textX = ((exhibit[i].index - 1) % 4) * 256 + 5;
-          textY = 64 * Math.floor((exhibit[i].index - 1) / 4) + 33;
-          txtCtx.clearRect(
-            ((exhibit[i].index - 1) % 4) * 256,
-            64 * Math.floor((exhibit[i].index - 1) / 4),
-            256,
-            64
-          );
-          txtCtx.fillText(exhibit[i].title, textX, textY);
-          if (i == exhibit.length - 1) {
-            var base64Data = txtCanvas.toDataURL("image/png", 1.0);
-            GlobalControl.exhibits.uploadBase64Img(
-              base64Data,
-              VeryNettyPara.ProjectID + that.house + titleName,
-              GlobalControl.exhibits.applyTokenDo(),
-              callback(titleName)
-            );
-          }
-        }
+      if (exhibit[picIndex]) {
+        textX = ((exhibit[picIndex].index - 1) % 4) * 256 + 5;
+        textY = 64 * Math.floor((exhibit[picIndex].index - 1) / 4) + 33;
+        txtCtx.clearRect(((exhibit[picIndex].index - 1) % 4) * 256,64 * Math.floor((exhibit[picIndex].index - 1) / 4),256,64);
+        txtCtx.fillText(exhibit[picIndex].title, textX, textY);
       }
+      let base64Data = txtCanvas.toDataURL("image/png", 1.0);
+      GlobalControl.exhibits.uploadBase64Img(base64Data,VeryNettyPara.ProjectID + that.house + titleName,GlobalControl.exhibits.applyTokenDo(),callback(titleName));
     };
   }
 
   //创建画布
   public textureRepalce(
     exhibit: TextData[],
+    urlName:string,
     picIndex: number,
     callback: (picName: string) => void
   ): void {
@@ -4931,19 +5115,11 @@ export class Exhibits {
     let height;
     let xPos;
     let yPos;
+    let reXPos;
+    let reYPos;
     let imgS;
     let scale = 1;
-    let picName = "10-16幅画.jpg"; //展画16
-    if (exhibit.length > 16) {
-      picName = "30-40幅画.jpg"; //展画40
-    }
-    // if (exhibit.length < 16) {
-    //   width = 1024;
-    //   height = 1024;
-    // } else {
-    //   width = 4096;
-    //   height = 4096;
-    // }
+    let picName = urlName;
     width = 4096;
     height = 4096;
 
@@ -4953,6 +5129,7 @@ export class Exhibits {
     picCanvas.height = height;
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, width, height);
+    console.log("展画开始")
 
     //创建贴图
     function drawing(picIndex) {
@@ -4966,51 +5143,39 @@ export class Exhibits {
 
         img.onload = function () {
           if (exhibit[picIndex]) {
-            if (exhibit.length <= 16) {
+            if (picName.substring(1,3) === "10") {
               imgS = 1024;
               if (img.width >= img.height) {
                 scale = imgS / img.width;
                 xPos = ((exhibit[picIndex].index - 1) % 4) * imgS;
-                yPos =
-                  Math.floor((exhibit[picIndex].index - 1) / 4) * imgS +
-                  (imgS - scale * img.height) / 2;
+                yPos = Math.floor((exhibit[picIndex].index - 1) / 4) * imgS +(imgS - scale * img.height) / 2;
               } else {
                 scale = imgS / img.height;
-                xPos =
-                  ((exhibit[picIndex].index - 1) % 4) * imgS +
-                  (imgS - scale * img.width) / 2;
+                xPos = ((exhibit[picIndex].index - 1) % 4) * imgS +(imgS - scale * img.width) / 2;
                 yPos = Math.floor((exhibit[picIndex].index - 1) / 4) * imgS;
               }
+              reXPos = ((exhibit[picIndex].index - 1) % 4)* imgS;
+              reYPos = Math.floor((exhibit[picIndex].index - 1) / 4) * imgS;
             } else {
               imgS = 585.143;
               if (img.width >= img.height) {
                 scale = imgS / img.width;
                 xPos = ((exhibit[picIndex].index - 1) % 7) * imgS;
-                yPos =
-                  Math.floor((exhibit[picIndex].index - 1) / 7) * imgS +
-                  (imgS - scale * img.height) / 2;
+                yPos = Math.floor((exhibit[picIndex].index - 1) / 7) * imgS +(imgS - scale * img.height) / 2;
               } else {
                 scale = imgS / img.height;
-                xPos =
-                  ((exhibit[picIndex].index - 1) % 7) * imgS +
-                  (imgS - scale * img.width) / 2;
+                xPos = ((exhibit[picIndex].index - 1) % 7) * imgS +(imgS - scale * img.width) / 2;
                 yPos = Math.floor((exhibit[picIndex].index - 1) / 7) * imgS;
               }
+              reXPos = ((exhibit[picIndex].index - 1) % 7)* imgS;
+              reYPos = Math.floor((exhibit[picIndex].index - 1) / 7) * imgS;
             }
-            ctx.drawImage(
-              img,
-              0,
-              0,
-              img.width,
-              img.height,
-              xPos,
-              yPos,
-              scale * img.width,
-              scale * img.height
-            );
+            ctx.fillStyle = "#4A4A4A";
+            ctx.fillRect(reXPos,reYPos,imgS,imgS);
+            ctx.drawImage(img,0,0,img.width,img.height,xPos,yPos,scale * img.width,scale * img.height);
           }
 
-          var base64Data = picCanvas.toDataURL("image/jpeg", 1.0);
+          let base64Data = picCanvas.toDataURL("image/jpeg", 1.0);
           GlobalControl.exhibits.uploadBase64Img(
             base64Data,
             VeryNettyPara.ProjectID + that.house + picName,
@@ -5021,9 +5186,7 @@ export class Exhibits {
       }
     }
     let img = new Image();
-
     img.src = "." + that.house + picName + "?" + Date.now();
-
     img.onload = function () {
       ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, width, height);
       drawing(picIndex);
@@ -5051,7 +5214,6 @@ export class Exhibits {
     const options = {
       // partSize: 100 * 1024,
       progress: function (p) {
-        console.log(p);
         p = (p * 100) >> 0;
         if (p === 100) {
           if (callback) {
@@ -5784,11 +5946,7 @@ export class Exhibits {
   }
 
   //创建title文字插入
-  public titleReplace(
-    title: string,
-    btnExhibitName,
-    callback = () => {}
-  ): void {
+  public titleReplace(title: string,btnExhibitName,houseLetter:string,callback = () => {}): void {
     let that = this;
     let txtCanvas = document.createElement("canvas");
     let txtCtx = txtCanvas.getContext("2d");
@@ -5799,70 +5957,109 @@ export class Exhibits {
     txtCanvas.height = txtHeight;
 
     let img = new Image();
-    img.src = "." + that.house + btnExhibitName.replace(/^(\d*)/g, "") + ".png";
+    img.src = "." + that.house +houseLetter+ btnExhibitName.replace(/^(\d*)/g, "") + ".png";
+    console.log(img.src)
     img.onload = function () {
-      txtCtx.drawImage(
-        img,
-        0,
-        0,
-        img.width,
-        img.height,
-        0,
-        0,
-        txtWidth,
-        txtHeight
-      );
-      txtCtx.font = that.titleSize + "px" + " " + that.titleFamily;
-      txtCtx.fillStyle = that.titleColor;
-      let textX = txtWidth / 2;
-      let textY = txtHeight / 2 + that.titleSize / 3;
+      //判断标题贴图是否为竖直
+      if (img.width < img.height) {
+        //竖直标题
+        txtWidth = 128;
+        txtHeight = 512;
+        txtCanvas.width = txtWidth;
+        txtCanvas.height = txtHeight;
+        txtCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, txtWidth, txtHeight);
+        txtCtx.font = that.titleSize + "px" + " " + that.titleFamily;
+        txtCtx.fillStyle = that.titleColor;
+        let textX = txtWidth / 2;
+        let textY = txtHeight / 2 - title.length * that.titleSize / 2 + that.titleSize;
 
-      txtCtx.textAlign = "center";
-      txtCtx.clearRect(0, 0, txtWidth, txtHeight);
-      txtCtx.fillText(title, textX, textY);
-      console.log(textX, textY, that.titleSize);
+        txtCtx.textAlign = "center";
+        txtCtx.clearRect(0, 0, txtWidth, txtHeight);
+        Exhibits.canvasCtxWrap(txtCanvas, title, textX, textY, that.titleSize, that.titleSize)
+      } else if(img.width > img.height) {
+        //普通标题
+        txtCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, txtWidth, txtHeight);
+        txtCtx.font = that.titleSize + "px" + " " + that.titleFamily;
+        txtCtx.fillStyle = that.titleColor;
+        let textX = txtWidth / 2;
+        let textY = txtHeight / 2 + that.titleSize / 3;
+
+        txtCtx.textAlign = "center";
+        txtCtx.clearRect(0, 0, txtWidth, txtHeight);
+        txtCtx.fillText(title, textX, textY);
+      } else if(img.width = img.height){
+        //换行标题
+        txtWidth = 512;
+        txtHeight = 512;
+        txtCanvas.width = txtWidth;
+        txtCanvas.height = txtHeight;
+        txtCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, txtWidth, txtHeight);
+        txtCtx.font = that.titleSize + "px" + " " + that.titleFamily;
+        txtCtx.fillStyle = that.titleColor;
+        let textX = txtWidth / 2;
+
+        // txtCtx.textAlign = "center";
+        txtCtx.clearRect(0, 0, txtWidth, txtHeight);
+        let line = Exhibits.canvasCtxWrap(txtCanvas, title, 0, that.titleSize, txtWidth, that.titleSize);
+        let textY = txtHeight / 2 - line * that.titleSize / 2 + that.titleSize;
+        txtCtx.clearRect(0, 0, txtWidth, txtHeight);
+        Exhibits.canvasCtxWrap(txtCanvas, title, 0, textY, txtWidth, that.titleSize);
+      }
+    
+      //上传title的贴图
       var base64Data = txtCanvas.toDataURL("image/png", 1.0);
-      let path =
-        VeryNettyPara.ProjectID +
-        that.house +
-        btnExhibitName.replace(/^(\d*)/g, "") +
-        ".png";
-      GlobalControl.exhibits.uploadBase64Img(
-        base64Data,
-        path,
-        GlobalControl.exhibits.applyTokenDo(),
-        () => {
+      let path = VeryNettyPara.ProjectID + that.house +houseLetter+ btnExhibitName.replace(/^(\d*)/g, "") +".png";
+      GlobalControl.exhibits.uploadBase64Img(base64Data,path,GlobalControl.exhibits.applyTokenDo(),() => {
           setTimeout(() => {
-            let filePath =
-              "." +
-              that.house +
-              btnExhibitName.replace(/^(\d*)/g, "") +
-              ".png" +
-              "?" +
-              Date.now();
-            let mesh = GlobalControl.exhibits._scene.getMeshByName(
-              btnExhibitName
-            );
-            let newTexture = new BABYLON.Texture(
-              filePath,
-              GlobalControl.exhibits._scene
-            );
+            let filePath ="." +that.house +houseLetter+btnExhibitName.replace(/^(\d*)/g, "") +".png" +"?" +Date.now();
+            let mesh = GlobalControl.exhibits._scene.getMeshByName(btnExhibitName);
+            let newTexture = new BABYLON.Texture(filePath,GlobalControl.exhibits._scene);
             newTexture.level = 2;
             newTexture.hasAlpha = true;
             let texture = "texture" + Date.now();
-            let newMaterial = new BABYLON.StandardMaterial(
-              texture,
-              GlobalControl.exhibits._scene
-            );
+            let newMaterial = new BABYLON.StandardMaterial(texture,GlobalControl.exhibits._scene);
             newMaterial.diffuseTexture = newTexture;
             newMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
             mesh.material = newMaterial;
-            console.log("changed");
           }, 1000);
         }
       );
     };
   }
+  //自动换行
+  public static canvasCtxWrap(canvas: HTMLCanvasElement, text: string, x: number, y: number, maxWidth?: number, lineHeight?: number) {
+
+    let context = canvas.getContext("2d");
+    let _canvas = context.canvas;
+    let _line:number = 0;
+
+    if (typeof maxWidth == 'undefined') {
+      maxWidth = (_canvas && _canvas.width) || 300;
+    }
+    if (typeof lineHeight == 'undefined') {
+      lineHeight = (_canvas && parseInt(window.getComputedStyle(_canvas).lineHeight)) || parseInt(window.getComputedStyle(document.body).lineHeight);
+    }
+    let arrText = text.split('');
+    let line = '';
+
+    for (let n = 0; n < arrText.length; n++) {
+      let testLine = line + arrText[n];
+      let metrics = context.measureText(testLine);
+      let testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        _line++;
+        context.fillText(line, x, y);
+        line = arrText[n];
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, y);
+    _line++;
+    return _line;
+  }
+  //根据btn拿到该展厅的前缀
   public getHouse(btnExhibitName, callback?) {
     let that = this;
     if (!that.exhibits) {
@@ -5935,7 +6132,7 @@ export class Exhibits {
   }
   public removeallbg() {
     const ulBtnNode = $(
-      ".share-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
+      ".share-btn,.support-btn,.resume-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
     );
     ulBtnNode.removeClass("btn-selected");
   }

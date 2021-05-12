@@ -121,6 +121,39 @@ export class VeryCharacter
                     
                 }
             });
+            //方向按钮
+            Exhibits.forwardBtn.onPointerDownObservable.add(() => {
+                this.IsNotMove(true);
+                this._dirMoveDic["up"]=true;
+              });
+              Exhibits.forwardBtn.onPointerUpObservable.add(() => {
+                that._dirMoveDic["up"]=false;
+                that.IsNotMove(false);
+              });
+              Exhibits.backBtn.onPointerDownObservable.add(() => {
+                that.IsNotMove(true);
+                this._dirMoveDic["down"]=true;
+              });
+              Exhibits.backBtn.onPointerUpObservable.add(() => {
+                this._dirMoveDic["down"]=false;
+                this.IsNotMove(false);
+              });
+              Exhibits.leftBtn.onPointerDownObservable.add(() => {
+                this.IsNotMove(true);
+                this._dirMoveDic["left"]=true;
+              });
+              Exhibits.leftBtn.onPointerUpObservable.add(() => {
+                this._dirMoveDic["left"]=false;
+                this.IsNotMove(false);
+              });
+              Exhibits.rightBtn.onPointerDownObservable.add(() => {
+                this.IsNotMove(true);
+                this._dirMoveDic["right"]=true;
+              });
+              Exhibits.rightBtn.onPointerUpObservable.add(() => {
+                this._dirMoveDic["right"]=false;
+                this.IsNotMove(false);
+              });
             VeryCharacter._scence.onBeforeRenderObservable.add(function(){
                 if(that._virtual!=undefined&&that._person!=undefined){
                     let t=new Date().getTime();

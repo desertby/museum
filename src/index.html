@@ -237,6 +237,7 @@
         height: 30px;
         left: 50%;
         top: 60%;
+        z-index: 9999;
         transform: translate(-50%, -50%);
       }
 
@@ -642,6 +643,14 @@
         line-height: 60px;
         font-size: 30px;
       }
+      .ui-btn .icon-tongxunlu {
+        line-height: 60px;
+        font-size: 30px;
+      }
+      .ui-btn .icon-warning-circle {
+        line-height: 60px;
+        font-size: 30px;
+      }
 
       .menu-list {
         display: none;
@@ -659,6 +668,10 @@
         background-color: #fff;
         text-align: center;
         cursor: pointer;
+      }
+
+      .resume-btn{
+        display: none;
       }
 
       .btn-selected {
@@ -795,121 +808,158 @@
     }
 
       /* 个人信息面板 */
-      .profile-box {
+      .profile-box{
         display: none;
         position: fixed;
-        left: 50%;
         top: 50%;
+        left: 50%;
         transform: translate(-50%, -50%);
-        width: 536px;
-        height: 470px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 20px;
+        width: 510px;
+        height: 865px;
+        background: #FFFDFD;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+        border-radius: 49px;
       }
-
-      .profile-box-namebox {
-        margin-top: 72px;
-        margin-left: 60px;
-      }
-
-      .profile-box .profile-box-name {
-        height: 30px;
-        font-size: 30px;
-        line-height: 30px;
-        font-weight: bold;
-        color: rgba(51, 51, 51, 1);
-      }
-
-      .icon-nan,
-      .icon-nv {
-        display: inline-block;
-        font-size: 28px;
-        line-height: 28px;
-        color: #568ff0;
-      }
-
-      .icon-nv {
-        color: rgb(255, 121, 119);
-      }
-
-      .icon-nan::after,
-      .icon-nv::after {
-        content: "";
-        display: inline-block;
-        width: 2px;
-        height: 20px;
-        line-height: 15px;
-        background-color: rgba(182, 182, 182, 1);
-        margin: 0 0 0 18px;
-      }
-
-      .profile-box-edit {
-        display: inline-block;
-        width: 94px;
-        height: 30px;
-        margin-left: 12px;
-        text-align: center;
-        font-size: 14px;
-        line-height: 30px;
-        vertical-align: bottom;
-        border: 1px solid rgba(51, 51, 51, 1);
-        border-radius: 15px;
-      }
-
-      .profile-box-edit .icon-xiugai {
-        font-size: 16px;
-        line-height: 30px;
-      }
-
-      .profile-box-detail {
-        margin-left: 60px;
-        color: #666666;
-      }
-
-      .profile-box-detail span {
-        margin-right: 20px;
-        vertical-align: middle;
-      }
-
-      .profile-box-detail-text {
-        font-size: 25px;
-      }
-
-      .cardcase-btn {
+      .profile-box .icon-fanhui1{
+        display: block;
         position: absolute;
-        left: 65px;
-        top: 380px;
-        width: 150px;
-        height: 46px;
-        background: rgba(0, 159, 232, 1);
-        border-radius: 23px;
-        color: #fff;
-        text-align: center;
-        line-height: 46px;
+        right: 45px;
+        top: 53px;
+        width: 10px;
+        height: 16px;
+        font-size: 25px;
         cursor: pointer;
       }
-
-      .cardcase-btn .icon-mingpian {
-        transform: translateY(2px);
-        font-size: 26px;
-        color: #fff;
+      .profile-box-text{
+        display: inline-block;
+        margin: 47px 340px 0px 42px;
+        width: 128px;
+        height: 45px;
+        font-size: 32px;
+        font-family: PingFangSC-Semibold, PingFang SC;
+        font-weight: 600;
+        color: #000000;
+        line-height: 45px;
       }
-
-      .icon-tuichu {
-        font-size: 17px;
-      }
-
-      .logout {
-        position: absolute;
-        top: 380px;
-        right: 65px;
-        width: 150px;
-        height: 46px;
-        background: rgba(241, 61, 61, 1);
-        border-radius: 23px;
-        color: #fff;
+      .profile-box .icon{
+        display: inline-block;
+        margin: 7px 0 7px 7px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
         text-align: center;
-        line-height: 46px;
+        border-radius: 30px;
+      }
+      #profile-box-account,
+      #profile-box-name,
+      .profile-box input{
+        display: inline-block;
+        position: relative;
+        bottom: 30px;
+        width: 300px;
+        height: 30px;
+        margin-left: 15px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        width: 104px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
+      }
+      .profile-box-account{
+        display: inline-block;
+        overflow: hidden;
+        margin: 32px 42px 0px 42px;
+        width: 426px;
+        height: 73px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .profile-box-name,
+      .profile-box-unit,
+      .profile-box-title{
+        display: inline-block;
+        overflow: hidden;
+        margin: 24px 42px 0px 42px;
+        width: 428px;
+        height: 74px;
+        border-radius: 37px;
+        background-color: #EDEDED;
+      }
+      .profile-box-gender{
+        display: inline-block;
+        margin: 26px 0 0 0;
+        overflow: hidden;
+        width: 427px;
+        height: 40px;
+      }
+      .profile-box-gender input[type="radio"]{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+      .profile-box-gender .icon--nangaoliang,
+      .profile-box-gender .icon--nan{
+        display: inline-block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        margin-left: 62px;
+        cursor: pointer;
+      }
+      .profile-box-gender .icon--nvgaoliang,
+      .profile-box-gender .icon--nv{
+        display: inline-block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        margin-left: 58px;
+        cursor: pointer;
+      }
+      .profile-box-confirm{
+        display: inline-block;
+        margin: 40px 41px 0px 42px;
+        width: 427px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #0091FF;
+        cursor: pointer;
+      }
+      .profile-box-signout{
+        display: inline-block;
+        margin: 42px 41px 0px 42px;
+        width: 427px;
+        height: 74px;
+        text-align: center;
+        line-height: 74px;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 37px;
+        background-color: #0091FF;
+        cursor: pointer;
+      }
+      .profile-box-extra{
+        display: inline-block;
+        height: 22px;
+        margin: 25px 0 0 0px;
+      }
+      .profile-box-forget-password{
+        width: 64px;
+        height: 22px;
+        margin: 25px 61px 47px 385px;
+        font-size: 16px;
+        font-family: PingFangSC-Regular, PingFang SC;
+        font-weight: 400;
+        color: #2A2A2A;
+        line-height: 22px;
         cursor: pointer;
       }
 
@@ -1175,6 +1225,42 @@
         background: rgba(0, 159, 232, 1);
         box-shadow: 0px 3px 9px 0px rgba(0, 159, 232, 0.54);
         border-radius: 6px;
+      }
+
+      /* 技术支持页面 */
+      .support-box {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 610px;
+        height: 324px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+      }
+
+      #support-title {
+        position: absolute;
+        left: 47px;
+        top: 47px;
+        width: 128px;
+        height: 45px;
+
+        font-weight: 400;
+        font-size: 32px;
+        color: rgba(51, 51, 51, 1);
+        line-height: 45px;
+      }
+
+      #support-description {
+        position: absolute;
+        text-align: center;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        color: rgba(0, 0, 0, 1);
       }
 
       /* 公告板 */
@@ -4654,7 +4740,7 @@
         right: 150px;
         /* border: orangered 1px solid; */
         border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.9);
+        background-color: rgba(255, 255, 255, 0);
       }
       /*对话框*/
       .oldMessage {
@@ -5083,6 +5169,12 @@
         <li class="menu-li sound-Mute-btn" id="sound-Mute-btn">
           <span class="iconfont icon-sound-filling"></span>
         </li>
+        <li class="menu-li resume-btn">
+          <span class="iconfont icon-tongxunlu"></span>
+        </li>
+        <li class="menu-li support-btn">
+          <span class="iconfont icon-warning-circle"></span>
+        </li>
       </ul>
     </div>
     <!-- 底部按钮 -->
@@ -5115,47 +5207,55 @@
     <!-- 个人信息 -->
     <div class="profile-box">
       <span class="close"></span>
-      <div class="profile-box-content">
-        <div class="profile-box-namebox">
-          <span class="profile-box-name">万维镜像</span>
-          <span class="iconfont profile-box-sex icon-nan"></span>
-          <div class="profile-box-edit">
-            <span class="iconfont icon-xiugai"></span>
-            <span class="profile-box-edit-text" data-i18n="edit">修改资料</span>
-          </div>
-        </div>
-        <div class="profile-box-detail">
-          <p class="profile-box-email">
-            <span class="iconfont icon-youxiang"></span>
-            <span class="profile-box-detail-text profile-box-email-text"
-              >market01@veryengine.com</span>
-          </p>
-          <p class="profile-box-company">
-            <span class="iconfont icon-gongsi"></span>
-            <span class="profile-box-detail-text profile-box-company-text"
-              >杭州万维镜像科技有限公司</span>
-          </p>
-          <p class="profile-box-position">
-            <span class="iconfont icon-zhiwei"></span>
-            <span class="profile-box-detail-text profile-box-position-text"
-              >销售经理</span>
-          </p>
-          <p class="profile-box-phone">
-            <span class="iconfont icon-shouji"></span>
-            <span class="profile-box-detail-text profile-box-phone-text"
-              >0571-86691087</span>
-          </p>
-        </div>
+      <div class="profile-box-text">用户资料</div>
+      <div class="profile-box-account">
+        <svg class="icon icon--shoujiicon" aria-hidden="true">
+            <use xlink:href="#icon--shoujiicon" />
+          </svg>
+        <div id="profile-box-account">手机号码/邮箱</div>
       </div>
-      <div class="cardcase-btn">
-        <svg class="icon icon-mingpian" aria-hidden="true">
-          <use xlink:href="#icon-mingpian"></use>
-        </svg>
-        <span data-i18n="cardcase">通讯录</span>
+      <div class="profile-box-name">
+        <svg class="icon icon--zhenshixingmingicon" aria-hidden="true">
+            <use xlink:href="#icon--zhenshixingmingicon" />
+          </svg>
+          <div id="profile-box-name">用户名</div>
       </div>
-      <div class="logout">
-        <span class="iconfont icon-tuichu"></span>
-        <span data-i18n="signout">退出登录</span>
+      <div class="profile-box-unit">
+        <svg class="icon icon--danweiicon" aria-hidden="true">
+            <use xlink:href="#icon--danweiicon" />
+          </svg>
+        <input type="text" id="profile-box-unit" placeholder="单位名称" />
+      </div>
+      <div class="profile-box-title">
+        <svg class="icon icon--zhiweiicon" aria-hidden="true">
+            <use xlink:href="#icon--zhiweiicon" />
+          </svg>
+        <input type="text" id="profile-box-title" placeholder="职位名称" />
+      </div>
+      <div class="profile-box-gender">
+        <label>
+          <input type="radio" name="gender" id="male" value="m">
+          <svg class="icon--nangaoliang" aria-hidden="true">
+            <use xlink:href="#icon--nangaoliang"/>
+            </svg>
+          <svg class="icon--nan" aria-hidden="true">
+            <use xlink:href="#icon--nan"/>
+            </svg>
+        </label>
+        <label>
+          <input type="radio" name="gender" id="female" value="f">
+          <svg class="icon--nvgaoliang" aria-hidden="true">
+            <use xlink:href="#icon--nvgaoliang"/>
+            </svg>
+          <svg class="icon--nv" aria-hidden="true">
+            <use xlink:href="#icon--nv"/>
+            </svg>
+        </label>
+      </div>
+      <div class="profile-box-confirm">确定修改</div>
+      <div class="profile-box-signout">退出登录</div>
+      <div class="profile-box-extra">
+        <u class="profile-box-forget-password">修改密码</u>
       </div>
     </div>
     <!-- 个人名片 -->
@@ -5279,6 +5379,14 @@
         data-i18n="edit-submit"
         >保存</a
       >
+    </div>
+    <!-- 技术支持 -->
+    <div class="support-box">
+      <span class="close"></span>
+      <div id="support-title" data-i18n="support">技术支持</div>
+      <p id="support-description" data-i18n="support-des">
+        杭州万维镜像科技有限公司<br />0571-86691087
+      </p>
     </div>
     <!-- 公告栏 -->
     <div class="board-box">
@@ -5505,6 +5613,30 @@
       </div>
       <div class="diy-des-save">保存</div>
     </div>
+    <!-- 展厅全景照片编辑 -->
+    <!-- <div class="diy-photo360">
+      <span class="close"></span>
+      <p class="diy-photo360-title">编辑展厅全景照片</p>
+      <div class="diy-photo360-main">
+        <diy class="diy-photo360-lobby" room="0">
+          <span class="diy-photo360-room">大厅</span>
+          <div class="diy-bgm-music-bg">
+            <span class="iconfont icon-yinlejia"></span>
+            <span class="diy-bgm-music-name"></span>
+          </div>
+          <input
+            type="file"
+            accept="mp3"
+            id="diy-bgm-file0"
+            class="diy-bgm-file"
+          />
+          <span class="diy-bgm-delete-music">
+            <span class="iconfont icon-chacha"></span>
+          </span>
+        </diy>
+      </div>
+      <div class="diy-bgm-save">保存</div>
+    </div> -->
     <!-- 通用编辑 -->
     <div class="diy-common">
       <span class="close"></span>
@@ -6244,7 +6376,7 @@
     </div>
   </div>
   </div>
-
+    <!-- 人见人评论框 -->
   <span class="oldMessage" id="oldMessage"></span>
   <div class="messagePar" id="messagePar">
     <div class="message">
@@ -6255,11 +6387,13 @@
       <button class="send"></button>
     </div>
   </div>
-
   <div class="messageHidePar" id="messageHidePar">
     <div class="messageHide">
       <button class="mhClose"></button>
     </div>
+  </div>
+  
+  </div>
   </div>
 
     <script src="museum1.js"></script>

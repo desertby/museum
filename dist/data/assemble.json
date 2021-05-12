@@ -2,29 +2,33 @@
   "lobby": [
     {
       "index": "0",
-      "sceneFile": "./assemble/A/",
-      "fileName": "A.babylon",
-      "door1": "A-D_2",
-      "door2": "A-D_1",
+      "sceneFile": "./assemble/B00/",
+      "fileName": "B.babylon",
+      "door1": "B-D_2",
+      "door2": "B-D_1",
       "bgMusic": "sound/bgm01.mp3",
       "descant": "",
-      "position":[100, 160.8, 100],
-      "rotation":[0, 144, 0],
-      "projectID": "qiTest0327",
-      "museumName": "",
+      "position": [-462.98047853427244,160.8,413.96730028532903],
+      "rotation": [-0.007209625752357767,1.9356421207576076,0],
+      "projectID": "qiTest0420",
+      "museumName": "qiTest0420",
+      "museumProfile": "万维镜像,123456,123456",
+      "question": true,
       "forceLogin": false,
+      "teleportMap": true,
+      "PTP": false,
+      "isCommentAvailable": true,
       "creatAccount": "17857166389",
-      "teleportMap":true,
-      "PTP":false
+      "directNav": false
     }
   ],
   "exhibits": [
     {
       "index": "1",
-      "sceneFile": "./assemble/C/",
-      "fileName": "C.babylon",
-      "door1": "C-D_1",
-      "door2": "C-D_2",
+      "sceneFile": "./assemble/E0/",
+      "fileName": "E.babylon",
+      "door1": "E-D_1",
+      "door2": "E-D_2",
       "bgMusic": "./sound/bgm01.mp3",
       "descant": ""
     }

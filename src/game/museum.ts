@@ -71,7 +71,7 @@ export class Museum {
 
     let guide: Guide = new Guide(scene, this._canvas);
 
-    let exhibits: Exhibits = new Exhibits(scene, this._canvas);
+    let exhibits: Exhibits = new Exhibits(scene, this._canvas,this._engine);
     GlobalControl.exhibits = exhibits;
 
     let screenVideo: ScreenVideo = new ScreenVideo(scene);

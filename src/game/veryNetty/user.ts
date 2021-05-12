@@ -12,4 +12,9 @@ export const userReregister=data=>qsPost('https://utp.veryengine.cn/User/ReRegis
 export const userFindpwd=data=>qsPost('https://utp.veryengine.cn/User/FindPwd',data);
 
 export const BindPersonTag=(data)=>qsPost('https://utp.veryengine.cn/Tag/BindPersonTag',data);
+
 export const queryPersonTag=(data)=>qsPost('https://utp.veryengine.cn/Tag/queryPersonTag',data);
+
+export const hasLogin = data => qsPost('https://utp.veryengine.cn/User/HasLogin',data);
+
+export const signout = () => qsPost('https://utp.veryengine.cn/User/SignOut');

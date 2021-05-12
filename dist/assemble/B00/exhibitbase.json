@@ -1,0 +1,231 @@
+{
+  "definedTitle": {
+    "A": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#76716d",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "B": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "C": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "D": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "E": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#ffffff",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "F": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "G": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "H": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "I": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "J": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "K": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "L": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#ffffff",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "M": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#e4d2a0",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "N": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#ffffff",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    },
+    "O": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#ffffff",
+      "bigTitleSize": 60,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#505050",
+      "smallTitleSize": 30
+    }
+  },
+  "reflection": {
+    "A-ground": {
+      "des": "A展厅的地面",
+      "isGround": true,
+      "open": true,
+      "level": 0.1,
+      "visibility": 1
+    },
+    "B-ground": {
+      "des": "B展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "C-ground": {
+      "des": "C展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "D-ground": {
+      "des": "D展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "E-ground": {
+      "des": "E展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "F-ground": {
+      "des": "F展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "G-ground": {
+      "des": "G展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "H-ground": {
+      "des": "H展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "I-ground": {
+      "des": "I展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "J-ground": {
+      "des": "J展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "K-ground": {
+      "des": "K展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "L-ground": {
+      "des": "L展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "M-ground": {
+      "des": "M展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "N-ground": {
+      "des": "N展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "O-ground": {
+      "des": "O展厅的地面",
+      "isGround": false,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    }
+  }
+}

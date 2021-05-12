@@ -1,3 +1,4 @@
+import { Transform } from "src/babylon";
 import { Game } from "./game";
 import { ImageCode } from "./imageCode";
 
@@ -42,6 +43,7 @@ export class CustomLoadingScreen implements ILoadingScreen {
     imgBack.src = "./images/progress/bg.png";
     imgBack.id = "id-image";
     imgBack.style.position = "absolute";
+    imgBack.style.zIndex = '0';
     imgBack.style.left = "0px";
     imgBack.style.top = "0px";
     imgBack.style.width = "100%";
@@ -55,7 +57,6 @@ export class CustomLoadingScreen implements ILoadingScreen {
       setTimeout(()=>{
         $(".cover").hide();
       },1000)
-      
       CustomLoadingScreen.loadingScreenDiv!.style.display = 'block';
       CustomLoadingScreen.loadingScreenDiv!.insertBefore(imgBack, progress);
     }

@@ -37,6 +37,7 @@ export class Game {
 
   public static exhibits: any;
   public static step: any[];
+  public static lobbyStep:any[];
   public static style: any;
   public static diyData: any;
   public static ports: any;
@@ -47,6 +48,7 @@ export class Game {
   public static x1: any;
   public static y1: any;
   public static isCancel: boolean = true;
+  public static firstFinished:boolean = false;
   public static width: number = 1080;
   public static height: number = 700;
   public static rangeArray:{[key:string]:number[][]}={};
@@ -56,6 +58,7 @@ export class Game {
   public static initRot:BABYLON.Vector3 = new BABYLON.Vector3(0, 0, 0);
   public static commentbody: BABYLON.GUI.TextBlock;
   public static bucket = "veryexpo";
+  public static ctxRange = [];
   
 
   constructor(canvasElement: HTMLCanvasElement) {
@@ -216,6 +219,12 @@ export class Game {
               if (that._scene.getMeshByName(that._data["lobby"][0].door2)) {
                 var Port1 = that._scene.getMeshByName(that._data["lobby"][0].door2);
                 Game._ports.push(Port1);
+                
+              }
+              //大厅定位x和z归零
+              let lobbyParent = that._scene.getMeshByName(that._data["lobby"][0].fileName[0]);
+              if(lobbyParent){
+                lobbyParent.setAbsolutePosition(new BABYLON.Vector3(0,lobbyParent.absolutePosition.y,0));
               }
 
               var port2 = that._scene.getMeshByName(that._data['lobby'][0].door1);
@@ -227,6 +236,10 @@ export class Game {
               if (that._data["lobby"][0].forceLogin === false) {
                 (that._scene.activeCamera as BABYLON.UniversalCamera).speed = 10;
                 that._scene.activeCamera.inputs.attached.mouse.attachControl(that._canvas);
+              }
+              //评论点赞开关
+              if(that._data['lobby'][0].isCommentAvailable === false){
+                Exhibits.isCommentAvailable = false;
               }
               // 加载背景音乐和解说词
               if (that._data["lobby"][0].bgMusic !== "") {
@@ -251,7 +264,6 @@ export class Game {
               if (that._scene.getMeshByName("suo-02")) {
                 that._scene.getMeshByName("suo-02").dispose();
               }
-
 
               //camera's position and rotation
               if (that._data['lobby'][0].position && that._data['lobby'][0].rotation) {
@@ -324,13 +336,32 @@ export class Game {
                 (that._scene.activeCamera as BABYLON.UniversalCamera).applyGravity = false;
                 (that._scene.activeCamera as BABYLON.UniversalCamera).checkCollisions = false;
                 SocketManager.isPTP = true;
+                //通讯录按钮显示
+                $(".menu-li resume-btn").css("display", "block");
               }
               SocketManager.Instance.Connect("121.43.136.90", 3331);
               that._museum = new Museum(that._engine,scene,that._canvas,that);
 
               //结束后回调
               let observor = that._scene.onReadyObservable.addOnce(() => {
-                
+                //set cookie
+                if(that._data['lobby'][0].link && that._data['lobby'][0].link !=="" && that._data['lobby'][0].link !== undefined){
+                  window.sessionStorage.setItem(that._data['lobby'][0].link,that._data['lobby'][0].link)
+                }
+                //入口出口标志处理
+              if (that._scene.getMeshByName("rukou")) {
+                that._scene.getMeshByName("rukou").checkCollisions = false;
+                that._scene.getMeshByName("rukou").isPickable = false;
+              }
+              if (that._scene.getMeshByName("chukou")) {
+                that._scene.getMeshByName("chukou").checkCollisions = false;
+                that._scene.getMeshByName("chukou").isPickable = false;
+              }
+
+              //方向导航键是否显示
+              if(Exhibits.assembleData.lobby[0].directNav){
+                Exhibits.grid.isVisible = true;
+              }
                 Game.diyMeshList = {
                   reflection: [] as BABYLON.AbstractMesh[],
                   video: [] as BABYLON.AbstractMesh[],
@@ -468,13 +499,13 @@ export class Game {
                     res.data.filter((it) => {
                       if (it.id == VeryNettyPara.ProjectID) {
                         Game.step = it.step;
+                        if(it.lobbyStep) Game.lobbyStep = it.lobbyStep;
                         Game.style = it.style;
                         if (Game.style == "kongzifeng") {
                           Game.diyStyleName = "kongzifengdiy";
                         } else Game.diyStyleName = "diy"
                       }
                     });
-                    
                   })
                   //拿到diy.json，获取每个展馆的拼接参数以及url
                   .then(() => {
@@ -496,11 +527,11 @@ export class Game {
                       Game.ctx = Game.picCanvas.getContext("2d");
                       Game.picCanvas.width = Game.width;
                       Game.picCanvas.height = Game.height;
-                      Game.ctx.fillStyle = "#0B0B0B";
+                      Game.ctx.fillStyle = "#FFFDFD";
                       Game.ctx.fillRect(0, 0, Game.width, Game.height);
                       Game.ctx.save();
-        
-                      Game.lobby("A", 1);
+                      Game.firstFinished = true;
+                      Game.lobby(Game.lobbyStep[0],Game.lobbyStep[1],Game.width / 2,Game.height / 2);
                       Game.exhibitsAssemble();
                       
                       var gameScene = that._scene;
@@ -521,6 +552,9 @@ export class Game {
                         })
                       })
                     });
+                  })
+                  .catch((e)=>{
+                    console.log(e)
                   })
         
                 //判断是否拼接成loop
@@ -675,6 +709,38 @@ export class Game {
     assetsManager.load();
   }
 
+  //获取拼接画布的范围并重新拼接
+  public static reAssemble(){
+    //获取拼接画布的范围
+    Game.stepArray.forEach((element)=>{
+      let minX = Math.min.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
+      let maxX = Math.max.apply(Math,[Game.rangeArray[element][0][0],Game.rangeArray[element][1][0]]);
+      let minY = Math.min.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
+      let maxY = Math.max.apply(Math,[Game.rangeArray[element][0][1],Game.rangeArray[element][1][1]]);
+      if (Game.ctxRange.length < 1) {
+        Game.ctxRange = [minX, minY, maxX, maxY];
+      } else {
+        let ctxMinX = Math.min.apply(Math,[Game.ctxRange[0], minX]);
+        let ctxMaxX = Math.max.apply(Math,[Game.ctxRange[2], maxX]);
+        let ctxMinY = Math.min.apply(Math,[Game.ctxRange[1], minY]);
+        let ctxMaxY = Math.max.apply(Math,[Game.ctxRange[3], maxY]);
+        Game.ctxRange = [ctxMinX, ctxMinY, ctxMaxX, ctxMaxY];
+      }
+    })
+    let oldWidth = Game.width;
+    let oldHeight = Game.height;
+    Game.width = Game.ctxRange[2]-Game.ctxRange[0]+100;
+    Game.height = Game.ctxRange[3]-Game.ctxRange[1]+100;
+    Game.picCanvas.width = Game.width;
+    Game.picCanvas.height = Game.height;
+    Game.ctx.fillStyle = "#D8D8D866";
+    Game.ctx.fillRect(0, 0, Game.width, Game.height);
+    Game.ctx.save();
+    Game.firstFinished = false;
+    Game.lobby(Game.lobbyStep[0],Game.lobbyStep[1],oldWidth/2 - Game.ctxRange[0]+50,oldHeight/2 - Game.ctxRange[1]+50);
+    Game.exhibitsAssemble();
+  }
+
   public static isLoop(port1: BABYLON.AbstractMesh, port2: BABYLON.AbstractMesh): boolean {
     let xDif = port1.getAbsolutePosition().clone().x - port2.getAbsolutePosition().clone().x;
     let zDif = port1.getAbsolutePosition().clone().z - port2.getAbsolutePosition().clone().z;
@@ -687,7 +753,7 @@ export class Game {
   }
 
   public static teleport(pos:BABYLON.Vector3,rot:BABYLON.Vector3,element: string, scene: BABYLON.Scene, door1: number, door2: number) {
-    if (element == "A") {
+    if (element == Game.lobbyStep[0]) {
       (scene.activeCamera as BABYLON.UniversalCamera).position = pos;
       (scene.activeCamera as BABYLON.UniversalCamera).rotation = rot;
     } else {
@@ -714,6 +780,7 @@ export class Game {
 
   public static exhibitsAssemble() {
     Game.exhibits = [];
+    if(!Game.step) return Game.exhibits;
     Game.step.forEach((element) => {
       if (element[1] == 1) {
         Game.exhibits.push([
@@ -737,7 +804,7 @@ export class Game {
     return Game.exhibits;
   }
 
-  public static lobby(exhibit: string, door: number) {
+  public static lobby(exhibit: string, door: number, centerX:number, centerY:number) {
     let img = new Image();
     let path:string[] = Game.diyData[exhibit].url.split(/\//g);
     Game.diyData[exhibit].url="https://veryexpo.oss-cn-hangzhou.aliyuncs.com/museumeditor/data/exhibitsimg/"+Game.style+"/"+path[path.length-1];
@@ -746,18 +813,18 @@ export class Game {
       door == 1 ? Game.diyData[exhibit].D1 : Game.diyData[exhibit].D2;
     Game.ports = [];
     Game.ports.push(temp0);
-    var _centerPosition = [Game.width / 2, Game.height *3/ 4];
+    var _centerPosition = [centerX, centerY];
 
     //固定大厅A的位置为canvas中心，这个可以在diy.json中的A.P1修改
     let AP1 = [
-      _centerPosition[0] + Game.diyData["A"].P1[0],
-      _centerPosition[1] + Game.diyData["A"].P1[1],
+      _centerPosition[0] + Game.diyData[exhibit].P1[0]- Game.diyData[exhibit].Rec[0]/2,
+      _centerPosition[1] + Game.diyData[exhibit].P1[1]- Game.diyData[exhibit].Rec[1]/2,
     ];
     Game.postions = [];
     Game.postions.push(AP1);
     let firstPoint = [_centerPosition[0]-Game.diyData[exhibit].Rec[0] / 2,_centerPosition[1]- Game.diyData[exhibit].Rec[1] / 2];
     let lastPoint = [_centerPosition[0]+Game.diyData[exhibit].Rec[0] / 2,_centerPosition[1]+ Game.diyData[exhibit].Rec[1] / 2];
-    let index = "A";
+    let index = exhibit;
     Game.stepArray.push(index);
     Game.rangeArray[index] = [firstPoint,lastPoint,[2,1]];
 
@@ -772,6 +839,8 @@ export class Game {
       Game.ctx.restore();
       if (Game.step.length >= 1) {
         Game.assemble(Game.step[0][0], Game.step[0][1], 0);
+      } else if(Game.firstFinished){
+        Game.reAssemble();
       }
     };
   }
@@ -840,6 +909,8 @@ export class Game {
       if (Game.isCancel) {
         if (i + 1 < Game.step.length) {
           Game.assemble(Game.step[i + 1][0], Game.step[i + 1][1], i + 1);
+        } else if(Game.firstFinished){
+          Game.reAssemble();
         }
       }
     };

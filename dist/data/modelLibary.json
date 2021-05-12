@@ -1,5 +1,2 @@
 [
-  { "path": "./model/1/", "name": "1.babylon", "img": "./model/1/model.jpg" },
-  { "path": "./model/2/", "name": "2.babylon", "img": "./model/2/model.jpg" },
-  { "path": "./model/3/", "name": "3.babylon", "img": "./model/3/model.jpg" }
 ]

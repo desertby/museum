@@ -4,7 +4,7 @@ import { VeryNettyPara } from "./veryNetty/VeryNettyPara";
 import { SocketManager } from "./veryNetty/SocketManager";
 import { VeryList, VeryString, VeryNumber } from "./veryNetty/veryVariables";
 import { Exhibits } from "./exhibits";
-import { runBtn } from "../main";
+import { Game, runBtn } from "../main";
 import PerfectScrollbar from "perfect-scrollbar";
 import QRCode from "qrcode";
 //界面按钮注册事件
@@ -21,29 +21,29 @@ export class uiBtnEvent {
       $(".menu img").toggle();
       $(".menu .icon-arrow-up").toggle();
       $(".menu-list").slideToggle(300);
-      $(".share-btn,.map-btn,.profile-btn,.translate-btn").removeClass(
+      $(".share-btn,.support-btn,.map-btn,.profile-btn,.translate-btn,.resume-btn").removeClass(
         "btn-selected"
       );
       $(".profile-box,.map-box,.share-box,.board-box").hide();
     });
     // 信息填写界面提交
-    $("#profile-submit").on("click", () => {
-      let strArr: (string | number | string[])[] = [];
-      $(".profile :text").each(function () {
-        strArr.push($(this).val());
-      });
-      strArr.splice(1, 0, $(":checked").val());
-      if (strArr.indexOf("") != -1) {
-        window.alert("请完整填写后再次提交");
-      } else {
-        this.updateProfile(strArr);
-        let str = strArr.join(",");
-        this.profile.value = str;
-        //根据项目id和个人id存储数据
-        SocketManager.Instance.SaveValues([this.profile], true, 123);
-        $(".profile").hide();
-      }
-    });
+    // $("#profile-submit").on("click", () => {
+    //   let strArr: (string | number | string[])[] = [];
+    //   $(".profile :text").each(function () {
+    //     strArr.push($(this).val());
+    //   });
+    //   strArr.splice(1, 0, $(":checked").val());
+    //   if (strArr.indexOf("") != -1) {
+    //     window.alert("请完整填写后再次提交");
+    //   } else {
+    //     this.updateProfile(strArr);
+    //     let str = strArr.join(",");
+    //     this.profile.value = str;
+    //     //根据项目id和个人id存储数据
+    //     SocketManager.Instance.SaveValues([this.profile], true, 123);
+    //     $(".profile").hide();
+    //   }
+    // });
 
     //性别选择
     $("input[type='radio']").on("click",function () {
@@ -64,26 +64,26 @@ export class uiBtnEvent {
       }
   })
     // 修改信息填写界面提交
-    $("#profile-edit-submit").on("click", () => {
-      let strArr: (string | number | string[])[] = [];
-      $(".profile-edit :text").each(function () {
-        strArr.push($(this).val());
-      });
-      strArr.splice(1, 0, $(":checked").val());
-      if (strArr.indexOf("") != -1) {
-        window.alert("请完整填写后再次提交");
-      } else {
-        this.updateProfile(strArr);
-        let str = strArr.join(",");
-        this.profile.value = str;
-        SocketManager.Instance.SaveValues([this.profile], true, 10089);
-        $(".profile-edit").hide();
-      }
-    });
+    // $("#profile-edit-submit").on("click", () => {
+    //   let strArr: (string | number | string[])[] = [];
+    //   $(".profile-edit :text").each(function () {
+    //     strArr.push($(this).val());
+    //   });
+    //   strArr.splice(1, 0, $(":checked").val());
+    //   if (strArr.indexOf("") != -1) {
+    //     window.alert("请完整填写后再次提交");
+    //   } else {
+    //     this.updateProfile(strArr);
+    //     let str = strArr.join(",");
+    //     this.profile.value = str;
+    //     SocketManager.Instance.SaveValues([this.profile], true, 10089);
+    //     $(".profile-edit").hide();
+    //   }
+    // });
 
     // 功能按钮点击变色，打开对应功能面板，并关闭其他面板
     const ulBtnNode = $(
-      ".share-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
+      ".share-btn,.support-btn,.resume-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
     );
     ulBtnNode.on("click", (e) => {
       let htmlNode: JQuery<HTMLElement>;
@@ -148,7 +148,7 @@ export class uiBtnEvent {
     });
 
     //打开名片盒面板
-    $(".cardcase-btn").on("click", () => {
+    $(".resume-btn").on("click", () => {
 
       this.closeall();
       $(".cardcase-box").show();
@@ -222,6 +222,11 @@ export class uiBtnEvent {
       $("#save-qr-btn").attr("href", dataURL);
       $(".share-box").toggle(200);
     });
+    // 打开技术支持页面
+    $(".support-btn").on("click", () => {
+      this.closeall();
+      $(".support-box").toggle(200);
+    });
 
     // 是否静音
     $(".sound-Mute-btn").on("click", () => {
@@ -257,41 +262,26 @@ export class uiBtnEvent {
     $(".signboard-btn").on("click", () => {
       this.closeall();
       if ($(".board-box").is(":hidden")) {
-        SocketManager.Instance.ValTimeCount(
-          "test",
-          false,
-          null,
-          null,
-          true,
+        SocketManager.Instance.ValTimeCount("test",false,null,null,true,
           (data) => {
             let count = data.count;
             let total = data.total;
             let avgTime = (total / count / 60) >> 0;
             $(".views-total p.num").text(count);
             $(".avg-time p.num").text(avgTime + '"');
-
             $(
               ".views-total .sk-fading-circle, .avg-time .sk-fading-circle"
             ).hide();
           }
         );
-
-        SocketManager.Instance.ValTimeCount(
-          "test",
-          false,
-          null,
-          null,
-          false,
+        SocketManager.Instance.ValTimeCount("test",false,null,null,false,
           (data) => {
             let count = data.count;
             $(".views-today p.num").text(count);
             $(".views-today .sk-fading-circle").hide();
           }
         );
-        SocketManager.Instance.GetValues(
-          [this.onlineNumber],
-          false,
-          812,
+        SocketManager.Instance.GetValues([this.onlineNumber],false,812,
           () => {
             $(".online-total p.num").text(this.onlineNumber.value);
             $(".online-total .sk-fading-circle").hide();
@@ -435,20 +425,20 @@ export class uiBtnEvent {
     });
   }
   //更新个人信息面板
-  public updateProfile(arr: any) {
-    let profileArray = arr;
-    let lang = parseInt(this.getCookie("language"));
-    $(".profile-box-name").text(profileArray[0]);
-    if (profileArray[1] === "f") {
-      $("profile-box-sex").toggleClass("icon-nan");
-      $("profile-box-sex").toggleClass("icon-nv");
-    }
-    $(".profile-box-edit-text").text(lang === 0 ? "修改资料" : "Edit");
-    $(".profile-box-email-text").text(profileArray[3]);
-    $(".profile-box-company-text").text(profileArray[4]);
-    $(".profile-box-position-text").text(profileArray[5]);
-    $(".profile-box-phone-text").text(profileArray[2]);
-  }
+  // public updateProfile(arr: any) {
+  //   let profileArray = arr;
+  //   let lang = parseInt(this.getCookie("language"));
+  //   $(".profile-box-name").text(profileArray[0]);
+  //   if (profileArray[1] === "f") {
+  //     $("profile-box-sex").toggleClass("icon-nan");
+  //     $("profile-box-sex").toggleClass("icon-nv");
+  //   }
+  //   $(".profile-box-edit-text").text(lang === 0 ? "修改资料" : "Edit");
+  //   $(".profile-box-email-text").text(profileArray[3]);
+  //   $(".profile-box-company-text").text(profileArray[4]);
+  //   $(".profile-box-position-text").text(profileArray[5]);
+  //   $(".profile-box-phone-text").text(profileArray[2]);
+  // }
   //切换按钮状态
   public btnSwitch(htmlnode: string) {
     return $(htmlnode).on("click", (e) => {
@@ -488,7 +478,7 @@ export class uiBtnEvent {
   }
   private removeallbg() {
     const ulBtnNode = $(
-      ".share-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
+      ".share-btn,.support-btn,.resume-btn,.map-btn,.profile-btn,.signboard-btn,.common-btn,.bgm-btn,.commentary-btn,.caizhitihuan-btn,.initPostion-btn"
     );
     ulBtnNode.removeClass("btn-selected");
   }

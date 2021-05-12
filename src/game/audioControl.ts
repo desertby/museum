@@ -21,10 +21,10 @@ export class AudioControl {
     let that = this;
 
     for (const key in AudioControl._bgMusicDoors) {
-      let aa = AudioControl._bgMusicDoors[key];
+      let bgm = AudioControl._bgMusicDoors[key];
       let count = 0;
-      aa.actionManager = new BABYLON.ActionManager(that._scene);
-      aa.actionManager!.registerAction(
+      bgm.actionManager = new BABYLON.ActionManager(that._scene);
+      bgm.actionManager!.registerAction(
         new BABYLON.ExecuteCodeAction(
           {
             trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
@@ -39,7 +39,7 @@ export class AudioControl {
         )
       );
 
-      aa.actionManager.registerAction(
+      bgm.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(
           {
             trigger: BABYLON.ActionManager.OnIntersectionExitTrigger,
@@ -85,7 +85,6 @@ export class AudioControl {
     } else {
       // console.log(AudioControl._descantList);
       // console.log(AudioControl._bgMusicList);
-      // console.log("aaaaa", this._backgroundActive);
       this._backgroundActive.play();
     }
   }
