@@ -1,0 +1,291 @@
+{
+  "definedTitle": {
+    "A": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "B": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "C": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "D": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#c30000",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "E": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#c30000",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "F": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "G": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "H": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#c30000",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "I": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "J": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "K": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "L": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#c30000",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "M": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "N": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    },
+    "O": {
+      "bigTitleFont": "方正正粗黑简体",
+      "bigTitleColor": "#fae200",
+      "bigTitleSize": 48,
+      "bigTitleSpace": 20,
+      "bigTitleWeight": 400,
+      "smallTitleFont": "方正正粗黑简体",
+      "smallTitleColor": "#fae200",
+      "smallTitleSize": 22,
+      "smallTitleSpace": 0,
+      "smallTitleWeight": 400
+    }
+  },
+  "reflection": {
+    "A-ground": {
+      "des": "A展厅的地面",
+      "isGround": true,
+      "open": true,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "B-ground": {
+      "des": "B展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "C-ground": {
+      "des": "C展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "D-ground": {
+      "des": "D展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "E-ground": {
+      "des": "E展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "F-ground": {
+      "des": "F展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "G-ground": {
+      "des": "G展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "H-ground": {
+      "des": "H展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "I-ground": {
+      "des": "I展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "J-ground": {
+      "des": "J展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "K-ground": {
+      "des": "K展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "L-ground": {
+      "des": "L展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "M-ground": {
+      "des": "M展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "N-ground": {
+      "des": "N展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    },
+    "O-ground": {
+      "des": "O展厅的地面",
+      "isGround": true,
+      "open": false,
+      "level": 0.3,
+      "visibility": 1
+    }
+  }
+}
